@@ -1,88 +1,24 @@
-# Dependencies
-vendor/
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
 # Environment files
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.production
 
-# Cache and logs
-storage/logs/
-storage/framework/cache/
-storage/framework/sessions/
-storage/framework/views/
-bootstrap/cache/
-application/cache/
-application/logs/
+# Logs
+*.log
+error_log
+
+# System files
+.DS_Store
+__MACOSX/
+Thumbs.db
 
 # IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-error_log
-*.log
-
-# Uploads (optional - you might want to keep some)
-resources/uploads/
-public/uploads/
 
 # Backup files
-*.bak
-*.backup
-*.old
-
-# Compiled assets
-public/css/
-public/js/
-resources/css/
-resources/js/
-
-# Laravel specific
-storage/app/
-storage/framework/
-storage/logs/
-bootstrap/cache/
-
-# CodeIgniter specific
-application/cache/
-application/logs/
-application/config/database.php
-
-# Database
-*.sql
-*.db
-*.sqlite
-
-# Composer
-composer.phar
-
-# Package files
 *.zip
 *.tar.gz
-*.rar
-
-# Test files
-tests/
-phpunit.xml
-.phpunit.result.cache
+*.bak
