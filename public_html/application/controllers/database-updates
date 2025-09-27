@@ -1,0 +1,15 @@
+1) Create new table admin_countries
+  title (Varchar, 255)
+  flag (varchar , 255)
+
+2) Add Colum in users table 
+    country_id (int)
+3) Add colum in products table 
+  country_id
+
+ 4) Add colum in blogs table
+    country_id 
+5) Add Colum in confessions
+  country_id
+  6) Add Colum In products_ads
+    country_id
