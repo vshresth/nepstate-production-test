@@ -2,6 +2,17 @@
 .env
 .env.local
 .env.production
+.env.testing
+
+# Database files
+*.sql
+
+# Temporary scripts
+create_*_user.php
+
+# Local config overrides
+application/config/database_local.php
+admin/.env.local
 
 # Logs
 *.log
@@ -21,5 +32,7 @@ Thumbs.db
 # Backup files
 *.zip
 *.tar.gz
-*.bak.ssh/
-*.sql
+*.bak
+
+# SSH keys
+.ssh/
