@@ -1485,10 +1485,17 @@ class Nepstate extends ADMIN_Controller {
 	public function do_login(){
 		$email = $this->input->post('email');
 		$password = md5($this->input->post('password'));
+		$return_url = $this->input->post('return_url');
 
 		$check_login = $this->db->query("SELECT * FROM `users` where (LOWER(`email`) = '".strtolower($email)."' OR LOWER(`username`) = '".strtolower($email)."') AND `password` = '".$password."'");
 		$ceck_count = $check_login->num_rows();
 		$return = isset($_SESSION['RETURN'])?$_SESSION['RETURN']:"";
+		
+		// If return_url is provided in the form, use it
+		if($return_url && $return_url != ""){
+			$return = $return_url;
+		}
+		
 		if($ceck_count > 0){
 			$row = $check_login->result_object()[0];
 			if($row->status==0){

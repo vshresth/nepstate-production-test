@@ -238,8 +238,8 @@
 																		<div class="elementor-widget-container">
 																	
 																			<!-- Search form 1 -->
-																			<div class="listygo-search-form search-form-1 ">
-																				   <form method="post" action="<?php echo base_url() ?>Nepstate/searchClassifiedsByCountry" class="form-vertical rtcl-widget-search-form rtcl-search-inline-form listygo-listing-search-form rtin-style-s">
+																			<div class="listygo-search-form search-form-1 " style="display: flex; align-items: center; gap: 15px;">
+																				   <form method="post" action="<?php echo base_url() ?>Nepstate/searchClassifiedsByCountry" class="form-vertical rtcl-widget-search-form rtcl-search-inline-form listygo-listing-search-form rtin-style-s" style="flex: 1;">
 																				      <div class="inner-form-wrap" style="border: 1px solid #d8d8d8;">
 																				                     <div class="btn-wrap">
 																							               <div class="form-group">
@@ -311,6 +311,15 @@
 																							         </div>
 																				      </div>
 																				   </form>
+																				   <!-- Add Listing Button -->
+																				   <a 
+																				   <?php if(isset($_SESSION['LISTYLOGIN'])){ ?>href="<?php echo base_url();?>new/post/events"<?php } else {?>href="javascript:;" onclick="setReturnUrlAndShowLogin('new/post/events')"<?php } ?>
+																				   class="listygo-btn listygo-btn--style1" style="margin-bottom: 0; white-space: nowrap;">
+																				       <span class="listygo-btn__icon">
+																				           <i class="fa-solid fa-plus"></i>
+																				       </span>
+																				       <span class="listygo-btn__text">Add Listing</span>
+																				   </a>
 																			</div>
 																			<!-- Search form 1 End -->		
 																		</div>

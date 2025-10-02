@@ -238,6 +238,7 @@ $google_client->addScope('profile');
                                     <div class="col-md-12">
                                         <h2 class="text-center">Log in</h2>
                                         <form id="rtcl-login-form" class="form-horizontal" method="post" action="<?php echo base_url();?>do/login">
+                                                        <input type="hidden" name="return_url" id="return_url_hidden" value="">
                                                         <div class="form-group">
                                                 <label for="rtcl-user-login" class="control-label">
                                                     Email Address or Username           <strong class="rtcl-required">*</strong>

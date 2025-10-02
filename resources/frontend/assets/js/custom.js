@@ -4,7 +4,19 @@ jQuery(document).ready(function(){
 
 function show_login_popup(){
     jQuery(".outer_wrap").hide();
-    jQuery("#signup_popup").fadeIn();
+jQuery("#signup_popup").fadeIn();
+}
+
+function setReturnUrlAndShowLogin(returnUrl){
+    // Set the return URL in a hidden form field
+    var hiddenInput = jQuery('#return_url_hidden');
+    if (hiddenInput.length === 0) {
+        // Create hidden input if it doesn't exist
+        jQuery('body').append('<input type="hidden" id="return_url_hidden" name="return_url" value="' + returnUrl + '">');
+    } else {
+        hiddenInput.val(returnUrl);
+    }
+    show_login_popup();
 }
 function show_signup_form(){
     jQuery(".outer_wrap").hide();
