@@ -1,6 +1,13 @@
 
 <?php
    $countryId = userCountryId();
+   
+// SEO Variables for Forums Page (MUST be before header)
+$page_title = "Forums - NepState | Nepalese Community Discussions";
+$meta_description = "Join discussions with the Nepalese community worldwide. Share experiences, ask questions, and connect with fellow Nepalese on topics ranging from immigration to culture.";
+$meta_keywords = "Nepalese forums, Nepal community discussions, Nepali community chat, diaspora forums, immigration discussions";
+$canonical_url = base_url() . "forums";
+$og_image = 'https://admin.nepstate.com/images/logo/1739511638.png';
 ?>
 
 

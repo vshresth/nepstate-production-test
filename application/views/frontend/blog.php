@@ -1,4 +1,12 @@
-<?php include("common/header.php"); 
+<?php 
+// SEO Variables for Blog Page (MUST be before header)
+$page_title = "Blog - NepState | Nepalese Community Stories & Articles";
+$meta_description = "Read inspiring stories, community updates, and articles from the Nepalese community worldwide. Share your experiences and connect with fellow Nepalese.";
+$meta_keywords = "Nepalese blog, Nepal community stories, Nepali articles, diaspora stories, community updates";
+$canonical_url = base_url() . "blog";
+$og_image = 'https://admin.nepstate.com/images/logo/1739511638.png';
+
+include("common/header.php"); 
 if(!isset($_SESSION['LISTYLOGIN'])){
     $_SESSION['RETURN'] = "blog"; 
 

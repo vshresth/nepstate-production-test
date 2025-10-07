@@ -1,4 +1,12 @@
-<?php include("common/header.php");
+<?php 
+// SEO Variables for Confessions Page (MUST be before header)
+$page_title = "Confessions - NepState | Anonymous Nepalese Community Stories";
+$meta_description = "Share your anonymous confessions and read stories from the Nepalese community worldwide. Connect through shared experiences in a safe, anonymous space.";
+$meta_keywords = "Nepalese confessions, anonymous stories, Nepal community confessions, diaspora confessions, Nepali community stories";
+$canonical_url = base_url() . "confessions";
+$og_image = 'https://admin.nepstate.com/images/logo/1739511638.png';
+
+include("common/header.php");
 if(!isset($_SESSION['LISTYLOGIN'])){
     $_SESSION['RETURN'] = "confessions"; 
 } 
