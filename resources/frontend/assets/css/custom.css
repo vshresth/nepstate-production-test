@@ -2131,6 +2131,36 @@ ul.entry-meta.conf_, .entry-meta.conf_ li {
     min-height: 45px;
 }
 
+/* Fix job card title alignment - consistent height for all cards */
+.listing-title {
+    height: 68px !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    line-height: 1.2 !important;
+    margin-bottom: 15px !important;
+}
+
+/* Ensure all job cards have equal height */
+.listing-item {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+.product-box {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+.item-content {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
 .widget-recent ul.recent-post li .item-img a img {
     width: 70px !important;
     height: 55px !important;

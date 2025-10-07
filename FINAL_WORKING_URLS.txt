@@ -1,0 +1,51 @@
+# Final Working URL List - Based on Confirmed Working URLs
+# Beni Ko Bazar URL works without /public/ - use original format
+
+# ========================================
+# MAIN PAGES (Submit First - High Priority)
+# ========================================
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+
+# ========================================
+# BUSINESS LISTINGS (Confirmed Working URLs)
+# ========================================
+https://nepstate.com/classified/detail/beni-ko-bazar
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal
+https://nepstate.com/classified/detail/everest-kitchen
+https://nepstate.com/classified/detail/namaste-shangri-la
+https://nepstate.com/classified/detail/himalayan-nepali-cuisine
+
+# ========================================
+# CLEAN URL LIST FOR AUTOMATION (Copy This)
+# ========================================
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+https://nepstate.com/classified/detail/beni-ko-bazar
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal
+https://nepstate.com/classified/detail/everest-kitchen
+https://nepstate.com/classified/detail/namaste-shangri-la
+https://nepstate.com/classified/detail/himalayan-nepali-cuisine
+
+# Total URLs: 17 (11 main + 6 businesses)
+# All URLs confirmed to work in browser

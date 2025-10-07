@@ -1,0 +1,44 @@
+# Complete List of Business URLs for Google Search Console
+# Use these URLs in URL Inspection tool to request indexing
+
+# Main Category Pages (High Priority)
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+
+# Other Main Pages
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+
+# Individual Business Listings (Copy these to URL Inspection)
+# Note: These are the URLs that will appear in your sitemap
+# Use URL Inspection tool for each one to request indexing
+
+# Example Business URLs (replace with actual URLs from your sitemap):
+https://nepstate.com/classified/detail/everest-kitchen
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal
+
+# Blog URLs (if any exist)
+https://nepstate.com/blog/details/[blog-slug-1]
+https://nepstate.com/blog/details/[blog-slug-2]
+https://nepstate.com/blog/details/[blog-slug-3]
+
+# Instructions:
+# 1. Go to Google Search Console
+# 2. Click "URL Inspection" tool
+# 3. Paste each URL above
+# 4. Click "Request Indexing"
+# 5. Wait for "URL is on Google" status
+
+# Priority Order:
+# 1. Main category pages (events, jobs, services, etc.)
+# 2. Individual business listings
+# 3. Blog posts
+# 4. Other pages

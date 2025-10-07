@@ -1,0 +1,37 @@
+# Complete URL List from LIVE Database
+# Generated: 2025-10-05 21:32:06
+# Total URLs: 14 (11 main + 3 businesses)
+
+# MAIN PAGES
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+
+# BUSINESS LISTINGS (From Live Database)
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar # Bara Nepalese Restaurant and Bar (services)
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal # CAFEMANDU - Flavors of Nepal (services)
+https://nepstate.com/classified/detail/everest-kitchen # Everest Kitchen (services)
+
+# CLEAN URL LIST FOR AUTOMATION
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal
+https://nepstate.com/classified/detail/everest-kitchen

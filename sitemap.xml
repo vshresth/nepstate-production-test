@@ -547,6 +547,23 @@
 
 <!-- Individual Business Listings (High Priority for Local SEO) -->
 <url>
+<loc>https://nepstate.com/classified/detail/everest-kitchen</loc>
+<lastmod>2025-03-18T23:18:20+00:00</lastmod>
+<priority>0.90</priority>
+</url>
+<url>
+<loc>https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar</loc>
+<lastmod>2025-03-18T21:12:26+00:00</lastmod>
+<priority>0.90</priority>
+</url>
+<url>
+<loc>https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal</loc>
+<lastmod>2025-03-18T20:46:06+00:00</lastmod>
+<priority>0.90</priority>
+</url>
+
+<!-- Additional Business Listings from Live Site -->
+<url>
 <loc>https://nepstate.com/classified/detail/beni-ko-bazar</loc>
 <lastmod>2025-01-27T17:30:00+00:00</lastmod>
 <priority>0.90</priority>

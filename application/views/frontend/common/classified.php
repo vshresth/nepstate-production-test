@@ -78,8 +78,8 @@
          <?php /**/ ?>
       </div>
       <div class="item-content">
-         <h3 class="listing-title rtcl-listing-title "><a href="<?php echo base_url();?>classified/detail/<?php echo $row->slug;?>">
-            <?php echo substr($row->title, 0, 35); ?> <?php echo strlen($row->title)>35?"...":""; ?>
+         <h3 class="listing-title rtcl-listing-title " style="height: 68px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; margin-bottom: 15px;"><a href="<?php echo base_url();?>classified/detail/<?php echo $row->slug;?>">
+            <?php echo substr($row->title, 0, 50); ?> <?php echo strlen($row->title)>50?"...":""; ?>
          </a></h3>
          <p style="word-break: break-all;">
          <?php 

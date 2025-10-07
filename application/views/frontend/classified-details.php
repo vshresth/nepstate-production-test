@@ -1,11 +1,6 @@
 
-<?php include("common/header.php"); ?>
-
-<style>
-</style>
-
 <?php
-    
+    // Load business data first (before header)
     $productInfo_ = $this->db->query("SELECT * FROM products WHERE slug = '".$slug."' ")->result_object()[0];
     if(user_info()->id == $productInfo_->uID){
          $country_city_ConditionQuery_classified = "";
@@ -14,7 +9,6 @@
     $row = $this->db->query("SELECT * FROM products WHERE slug = '".$slug."' ".$country_city_ConditionQuery_classified." ")->result_object()[0];
     
     if(empty($row)) {
-
         if(!empty($productInfo_)) {
             redirect(base_url().'classifieds/'.$productInfo_->category);
         }else{
@@ -24,9 +18,27 @@
 
     $json = json_decode($row->json_content, false);
     $category = $this->db->query("SELECT * FROM categories WHERE slug = '".$row->category."'")->result_object()[0];
+    
+    // Load business images for Open Graph
+    $business_images = $this->db->query("SELECT * FROM product_images WHERE product_id = ".$row->id." ORDER BY id ASC LIMIT 1")->result_object();
+    $og_image = !empty($business_images) ? $business_images[0]->image : 'https://admin.nepstate.com/images/logo/1739511638.png';
+    
+    // SEO Variables for Business Listing Pages (MUST be before header)
+    $page_title = $row->title . " - " . $category->title . " | NepState";
+    $meta_description = "Discover " . $row->title . " on NepState. " . substr(strip_tags($json->description), 0, 150) . "...";
+    $meta_keywords = $row->title . ", " . $category->title . ", Nepalese business";
+    $canonical_url = base_url() . "classified/detail/" . $row->slug;
+    
+    // Load remaining data
     $images = $this->db->query("SELECT * FROM product_images WHERE gallery = 0 AND product_id = ".$row->id)->result_object();
     $user = $this->db->query("SELECT * FROM users WHERE id = ".$row->uID)->result_object()[0];
+    
+    // NOW include header with all SEO variables set
+    include("common/header.php"); 
 ?>
+
+<style>
+</style>
 <?php if(count($images)<=3){?>
 <style type="text/css">
     .top_slider .swiper-wrapper {

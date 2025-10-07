@@ -15,29 +15,47 @@
 
     </style>
     <meta name="google-site-verification" content="HpryjVVurfz1oYsZz9qhw-vZnVwoHUHX0pvUE2Zgi78" />
-   <meta property="og:image" content="https://admin.nepstate.com/images/logo/1739511638.png" />
+   <meta property="og:image" content="<?php echo isset($og_image) ? $og_image : 'https://admin.nepstate.com/images/logo/1739511638.png'; ?>" />
+   <meta property="og:title" content="<?php echo isset($page_title) ? $page_title : 'NepState - Connecting Nepalese Globally'; ?>" />
+   <meta property="og:description" content="<?php echo isset($meta_description) ? $meta_description : 'Discover Nepalese businesses, jobs, events, and community connections worldwide.'; ?>" />
+   <meta property="og:url" content="<?php echo isset($canonical_url) ? $canonical_url : base_url(); ?>" />
+   <meta property="og:type" content="website" />
+   <meta property="og:site_name" content="NepState" />
+   
+   <!-- Twitter Card Tags -->
+   <meta name="twitter:card" content="summary_large_image" />
+   <meta name="twitter:title" content="<?php echo isset($page_title) ? $page_title : 'NepState - Connecting Nepalese Globally'; ?>" />
+   <meta name="twitter:description" content="<?php echo isset($meta_description) ? $meta_description : 'Discover Nepalese businesses, jobs, events, and community connections worldwide.'; ?>" />
+   <meta name="twitter:image" content="<?php echo isset($og_image) ? $og_image : 'https://admin.nepstate.com/images/logo/1739511638.png'; ?>" />
 
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZBH6L00TKQ"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TYFDS5X1PB"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
-  gtag('config', 'G-ZBH6L00TKQ');
+  gtag('config', 'G-TYFDS5X1PB');
 </script>
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-MTNNS63M');</script>
-<!-- End Google Tag Manager -->
+
+<!-- Enhanced DataLayer for NepState -->
+<script>
+window.dataLayer = window.dataLayer || [];
+dataLayer.push({
+  'page_category': '<?php echo isset($page_category) ? $page_category : "general"; ?>',
+  'user_type': '<?php echo isset($_SESSION["LISTYLOGIN"]) ? "logged_in" : "visitor"; ?>',
+  'page_type': '<?php echo isset($page_type) ? $page_type : "listing"; ?>',
+  'business_category': '<?php echo isset($business_category) ? $business_category : ""; ?>',
+  'listing_id': '<?php echo isset($listing_id) ? $listing_id : ""; ?>',
+  'country': '<?php echo isset($user_country) ? $user_country : ""; ?>'
+});
+</script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>NepState</title>
+    <title><?php echo isset($page_title) ? $page_title : "NepState - Connecting Nepalese Globally"; ?></title>
+    <meta name="description" content="<?php echo isset($meta_description) ? $meta_description : "Discover Nepalese businesses, jobs, events, and community connections worldwide. Find restaurants, services, and connect with the Nepalese diaspora."; ?>">
+    <meta name="keywords" content="<?php echo isset($meta_keywords) ? $meta_keywords : "Nepalese business, Nepal community, Nepali restaurants, jobs Nepal, events Nepal, diaspora"; ?>">
 	<meta name="robots" content="max-image-preview:large">
 	<link rel="dns-prefetch" href="https://fonts.googleapis.com">
 	<link rel="stylesheet" href="<?php echo $assets;?>assets/css/rtcl-public.min.css" media="all">

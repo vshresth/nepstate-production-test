@@ -1,5 +1,12 @@
-<?php include("common/header.php"); ?>
 <?php 
+// SEO Variables for Category Pages
+$category = $this->db->query("SELECT * FROM categories WHERE slug = '".$slug."'")->result_object()[0];
+$page_title = ucfirst($category->title) . " - NepState | " . $category->title . " Listings";
+$meta_description = "Find the best " . strtolower($category->title) . " listings on NepState. " . strip_tags($category->text_lorum);
+$meta_keywords = $category->title . ", Nepalese " . strtolower($category->title) . ", " . strtolower($category->title) . " listings";
+$canonical_url = base_url() . "classifieds/" . $category->slug;
+
+include("common/header.php"); 
 if(!isset($_SESSION['show_popup_login'])){
     // echo $slug;
     // die;
@@ -24,8 +31,7 @@ if(!isset($_SESSION['show_popup_login'])){
     }*/
 </style>
 
-<?php 
-$category = $this->db->query("SELECT * FROM categories WHERE slug = '".$slug."'")->result_object()[0]; ?>
+<?php // Category already loaded above for SEO ?>
 
 <section class="listing-archvie-page bg--accent" style="padding-top: 20px;">
 <div class="container-fluid mb-20">

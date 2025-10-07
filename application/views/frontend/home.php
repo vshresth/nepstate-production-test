@@ -1,4 +1,11 @@
-<?php include("common/header.php"); ?>
+<?php 
+// SEO Variables for Home Page
+$page_title = "NepState - Connecting Nepalese Globally | Business Directory & Community";
+$meta_description = "Join NepState, the largest Nepalese business directory worldwide. Find restaurants, jobs, events, and connect with the Nepalese diaspora. Discover authentic Nepali businesses near you.";
+$meta_keywords = "Nepalese business directory, Nepal community, Nepali restaurants, jobs Nepal, events Nepal, diaspora connections, business listings Nepal";
+$canonical_url = base_url();
+include("common/header.php"); 
+?>
 <style>
    .bg-slider {
    background: #fff;

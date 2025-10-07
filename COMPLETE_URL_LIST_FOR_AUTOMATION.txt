@@ -1,0 +1,66 @@
+# Complete URL List for NepState - Ready for Comet Browser Automation
+# Generated: 2025-01-27
+# Total URLs: 17
+
+# ========================================
+# MAIN PAGES (Submit First - High Priority)
+# ========================================
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+
+# ========================================
+# BUSINESS LISTINGS (Submit Second - Critical for SEO)
+# ========================================
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal
+https://nepstate.com/classified/detail/everest-kitchen
+
+# ========================================
+# BLOG POSTS (Submit Third - Lower Priority)
+# ========================================
+https://nepstate.com/blog/details/how-to-improve-your-google-rankings-with-nepali-business-listings
+https://nepstate.com/blog/details/nepali-businesses-in-the-usa-building-community-and-success
+https://nepstate.com/blog/details/the-future-of-nepali-business-listings-trends-innovations
+
+# ========================================
+# INSTRUCTIONS FOR COMET BROWSER
+# ========================================
+# 1. Copy all URLs above (without # comments)
+# 2. Use Comet Browser automation feature
+# 3. Set up sequence to visit Google Search Console
+# 4. For each URL:
+#    - Go to: https://search.google.com/search-console/url-inspection
+#    - Enter URL in inspection field
+#    - Click "Request Indexing"
+#    - Wait 2-3 seconds between requests
+# 5. Submit in order: Main Pages → Business Listings → Blog Posts
+
+# ========================================
+# CLEAN URL LIST (Copy This for Automation)
+# ========================================
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal
+https://nepstate.com/classified/detail/everest-kitchen
+https://nepstate.com/blog/details/how-to-improve-your-google-rankings-with-nepali-business-listings
+https://nepstate.com/blog/details/nepali-businesses-in-the-usa-building-community-and-success
+https://nepstate.com/blog/details/the-future-of-nepali-business-listings-trends-innovations

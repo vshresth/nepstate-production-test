@@ -1,0 +1,51 @@
+# Corrected URL List - With /public/ Path (Based on .htaccess Rules)
+# All URLs now include /public/ to match your server configuration
+
+# ========================================
+# MAIN PAGES (With /public/ path)
+# ========================================
+https://nepstate.com/public/
+https://nepstate.com/public/classifieds/events
+https://nepstate.com/public/classifieds/jobs
+https://nepstate.com/public/classifieds/services
+https://nepstate.com/public/classifieds/it-trainings
+https://nepstate.com/public/classifieds/roomates-rentals
+https://nepstate.com/public/blog
+https://nepstate.com/public/confessions
+https://nepstate.com/public/forums
+https://nepstate.com/public/about-us
+https://nepstate.com/public/contact-us
+
+# ========================================
+# BUSINESS LISTINGS (With /public/ path)
+# ========================================
+https://nepstate.com/public/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/public/classified/detail/cafemandu--flavors-of-nepal
+https://nepstate.com/public/classified/detail/everest-kitchen
+https://nepstate.com/public/classified/detail/beni-ko-bazar
+https://nepstate.com/public/classified/detail/namaste-shangri-la
+https://nepstate.com/public/classified/detail/himalayan-nepali-cuisine
+
+# ========================================
+# CLEAN URL LIST FOR AUTOMATION (Copy This)
+# ========================================
+https://nepstate.com/public/
+https://nepstate.com/public/classifieds/events
+https://nepstate.com/public/classifieds/jobs
+https://nepstate.com/public/classifieds/services
+https://nepstate.com/public/classifieds/it-trainings
+https://nepstate.com/public/classifieds/roomates-rentals
+https://nepstate.com/public/blog
+https://nepstate.com/public/confessions
+https://nepstate.com/public/forums
+https://nepstate.com/public/about-us
+https://nepstate.com/public/contact-us
+https://nepstate.com/public/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/public/classified/detail/cafemandu--flavors-of-nepal
+https://nepstate.com/public/classified/detail/everest-kitchen
+https://nepstate.com/public/classified/detail/beni-ko-bazar
+https://nepstate.com/public/classified/detail/namaste-shangri-la
+https://nepstate.com/public/classified/detail/himalayan-nepali-cuisine
+
+# Total URLs: 17 (11 main + 6 businesses)
+# All URLs now include /public/ to match your server configuration

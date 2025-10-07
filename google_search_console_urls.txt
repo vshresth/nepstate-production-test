@@ -1,0 +1,41 @@
+# Complete URL List for Google Search Console
+# Generated on: 2025-10-05 21:03:05
+# Total URLs: 17
+
+# MAIN PAGES (Priority 1 - Submit First)
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+
+# BUSINESS LISTINGS (Priority 2 - Submit Next)
+# Total businesses: 3
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar # Bara Nepalese Restaurant and Bar (services)
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal # CAFEMANDU - Flavors of Nepal (services)
+https://nepstate.com/classified/detail/everest-kitchen # Everest Kitchen (services)
+
+# BLOG POSTS (Priority 3)
+# Total blogs: 3
+https://nepstate.com/blog/details/how-to-improve-your-google-rankings-with-nepali-business-listings # How to Improve Your Google Rankings with Nepali Business Listings
+https://nepstate.com/blog/details/nepali-businesses-in-the-usa-building-community-and-success # Nepali Businesses in the USA: Building Community and Success
+https://nepstate.com/blog/details/the-future-of-nepali-business-listings-trends-innovations # The Future of Nepali Business Listings: Trends & Innovations
+
+# INSTRUCTIONS:
+# 1. Go to Google Search Console
+# 2. Click 'URL Inspection' tool
+# 3. Copy each URL above
+# 4. Paste and click 'Request Indexing'
+# 5. Start with MAIN PAGES first
+# 6. Then submit BUSINESS LISTINGS
+# 7. Finally submit BLOG POSTS
+
+# AUTOMATION OPTION:
+# Use Google Search Console API or browser automation
+# to submit all URLs automatically

@@ -1,0 +1,16 @@
+# Simple URL List from Live Database
+
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal
+https://nepstate.com/classified/detail/everest-kitchen

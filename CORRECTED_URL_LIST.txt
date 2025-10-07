@@ -1,0 +1,53 @@
+# Corrected URL List - Only Businesses That Actually Exist
+# Based on database check: Only 3 businesses exist
+
+# ========================================
+# MAIN PAGES (Submit First - High Priority)
+# ========================================
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+
+# ========================================
+# BUSINESS LISTINGS (Only These 3 Actually Exist)
+# ========================================
+https://nepstate.com/classified/detail/everest-kitchen
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal
+
+# ========================================
+# SKIP THESE (Don't Exist in Database)
+# ========================================
+# https://nepstate.com/classified/detail/beni-ko-bazar (DOESN'T EXIST)
+# https://nepstate.com/classified/detail/namaste-shangri-la (DOESN'T EXIST)
+# https://nepstate.com/classified/detail/himalayan-nepali-cuisine (DOESN'T EXIST)
+# Blog detail URLs (have redirect errors)
+
+# ========================================
+# CLEAN WORKING URL LIST (Copy This for Automation)
+# ========================================
+https://nepstate.com/
+https://nepstate.com/classifieds/events
+https://nepstate.com/classifieds/jobs
+https://nepstate.com/classifieds/services
+https://nepstate.com/classifieds/it-trainings
+https://nepstate.com/classifieds/roomates-rentals
+https://nepstate.com/blog
+https://nepstate.com/confessions
+https://nepstate.com/forums
+https://nepstate.com/about-us
+https://nepstate.com/contact-us
+https://nepstate.com/classified/detail/everest-kitchen
+https://nepstate.com/classified/detail/bara-nepalese-restaurant-and-bar
+https://nepstate.com/classified/detail/cafemandu--flavors-of-nepal
+
+# Total Working URLs: 14
+# 11 main pages + 3 actual businesses

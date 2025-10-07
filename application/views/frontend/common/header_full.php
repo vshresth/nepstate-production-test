@@ -239,6 +239,21 @@
 																	
 																			<!-- Search form 1 -->
 																			<div class="listygo-search-form search-form-1 " style="display: flex; align-items: center; gap: 15px;">
+																			<style>
+																			@media (max-width: 768px) {
+																				.listygo-search-form.search-form-1 {
+																					flex-direction: column !important;
+																					gap: 10px !important;
+																				}
+																				.listygo-search-form.search-form-1 form {
+																					width: 100% !important;
+																				}
+																				.listygo-search-form.search-form-1 .listygo-btn {
+																					width: 100% !important;
+																					justify-content: center !important;
+																				}
+																			}
+																			</style>
 																				   <form method="post" action="<?php echo base_url() ?>Nepstate/searchClassifiedsByCountry" class="form-vertical rtcl-widget-search-form rtcl-search-inline-form listygo-listing-search-form rtin-style-s" style="flex: 1;">
 																				      <div class="inner-form-wrap" style="border: 1px solid #d8d8d8;">
 																				                     <div class="btn-wrap">
