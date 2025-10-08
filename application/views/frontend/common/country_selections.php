@@ -152,29 +152,36 @@ document.body.addEventListener('click', function(event) {
     }
 });
 
-// Prevent form submission if same country is selected
+// Prevent form submission if same country is selected AND no city is being added
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form[action*="updateUserCity"]');
     const countrySelect = document.getElementById('countrySelect');
+    const cityInput = document.getElementById('userCityText');
     const currentCountryCode = '<?php echo getCountryCodeById(userCountryId()); ?>';
     
     console.log('Form found:', !!form);
     console.log('Country select found:', !!countrySelect);
     console.log('Current country code:', currentCountryCode);
     
-    if (form && countrySelect) {
+    if (form && countrySelect && cityInput) {
         form.addEventListener('submit', function(event) {
             const selectedCountryCode = countrySelect.value;
-            console.log('Selected country code:', selectedCountryCode);
+            const cityValue = cityInput.value.trim();
             
-            // If same country is selected, just close popup without submitting
-            if (selectedCountryCode === currentCountryCode) {
-                console.log('Same country selected - preventing submission');
+            console.log('Selected country code:', selectedCountryCode);
+            console.log('City value:', cityValue);
+            
+            // Only prevent submission if same country is selected AND no city is being added
+            if (selectedCountryCode === currentCountryCode && cityValue === '') {
+                console.log('Same country selected with no city - preventing submission');
                 event.preventDefault();
                 event.stopPropagation();
                 closePopupWithoutLoading();
                 return false;
             }
+            
+            // Allow submission if city is being added, even if same country
+            console.log('Allowing form submission');
         });
     }
 });
