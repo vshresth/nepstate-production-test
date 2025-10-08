@@ -53,23 +53,30 @@ class Nepstate extends ADMIN_Controller {
 		}
 
 
-		if(!isset($_COOKIE['user_country_id'])  && !isset($_COOKIE['user_city_id'])) {
-			if ($this->uri->segment(1) !== 'country-selection' && $this->uri->segment(1) !== 'update-user-country') {
-				
-				// redirect(base_url().'update-user-country/1');
+	// Check if this is a Google crawler (don't redirect crawlers)
+	$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+	$isGoogleBot = stripos($userAgent, 'googlebot') !== false || 
+				   stripos($userAgent, 'google') !== false ||
+				   stripos($userAgent, 'bingbot') !== false ||
+				   stripos($userAgent, 'crawler') !== false;
 
-				$currentUrl = current_url();
-				$queryString = $_SERVER['QUERY_STRING'];
-				if (!empty($queryString)) {
-					$currentUrl .= '?' . $queryString;
-				}
-
-				// Redirect with return URL
-				redirect(base_url() . 'update-user-country/1?redirect=' . urlencode($currentUrl));
-				
-			}
+	if(!isset($_COOKIE['user_country_id'])  && !isset($_COOKIE['user_city_id']) && !$isGoogleBot) {
+		if ($this->uri->segment(1) !== 'country-selection' && $this->uri->segment(1) !== 'update-user-country') {
 			
-		}	
+			// redirect(base_url().'update-user-country/1');
+
+			$currentUrl = current_url();
+			$queryString = $_SERVER['QUERY_STRING'];
+			if (!empty($queryString)) {
+				$currentUrl .= '?' . $queryString;
+			}
+
+			// Redirect with return URL
+			redirect(base_url() . 'update-user-country/1?redirect=' . urlencode($currentUrl));
+			
+		}
+		
+	}
 
 				
 

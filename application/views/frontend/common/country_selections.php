@@ -105,16 +105,19 @@
   <!-- Script to initialize Google Maps autocomplete -->
   <script>
 
-   
-   let locationLink = document.getElementById('locationLink');
-   let cityPopup = document.querySelector('.cityPopup');
-   let popupDispaly = false;
+// Only initialize if not already initialized
+if (typeof locationLink === 'undefined') {
+    let locationLink = document.getElementById('locationLink');
+    let cityPopup = document.querySelector('.cityPopup');
+    let popupDispaly = false;
 
-
-document.getElementById('locationLink').addEventListener('click', () => {
-    cityPopup.style.display = 'block';
-    popupDispaly = true;
-});
+    if (locationLink && cityPopup) {
+        locationLink.addEventListener('click', () => {
+            cityPopup.style.display = 'block';
+            popupDispaly = true;
+        });
+    }
+}
 
 document.getElementById('closeBtn').addEventListener('click', () => {
     cityPopup.style.display = 'none';

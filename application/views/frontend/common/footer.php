@@ -534,12 +534,7 @@ var fluentFormVars = {"ajaxUrl":".\/\/wp-admin\/admin-ajax.php","forms":[],"step
 <script type="text/javascript" id="elementor-frontend-js-before">var elementorFrontendConfig = {"environmentMode":{"edit":false,"wpPreview":false,"isScriptDebug":false},"i18n":{"shareOnFacebook":"Share on Facebook","shareOnTwitter":"Share on Twitter","pinIt":"Pin it","download":"Download","downloadImage":"Download image","fullscreen":"Fullscreen","zoom":"Zoom","share":"Share","playVideo":"Play Video","previous":"Previous","next":"Next","close":"Close"},"is_rtl":false,"breakpoints":{"xs":0,"sm":480,"md":768,"lg":1025,"xl":1440,"xxl":1600},"responsive":{"breakpoints":{"mobile":{"label":"Mobile Portrait","value":767,"default_value":767,"direction":"max","is_enabled":true},"mobile_extra":{"label":"Mobile Landscape","value":880,"default_value":880,"direction":"max","is_enabled":false},"tablet":{"label":"Tablet Portrait","value":1024,"default_value":1024,"direction":"max","is_enabled":true},"tablet_extra":{"label":"Tablet Landscape","value":1200,"default_value":1200,"direction":"max","is_enabled":false},"laptop":{"label":"Laptop","value":1366,"default_value":1366,"direction":"max","is_enabled":false},"widescreen":{"label":"Widescreen","value":2400,"default_value":2400,"direction":"min","is_enabled":false}}},"version":"3.13.4","is_static":false,"experimentalFeatures":{"e_dom_optimization":true,"e_optimized_assets_loading":true,"a11y_improvements":true,"additional_custom_breakpoints":true,"landing-pages":true},"urls":{"assets":"<?php echo $assets;?>plugins\/elementor\/assets\/"},"swiperClass":"swiper-container","settings":{"page":[],"editorPreferences":[]},"kit":{"viewport_mobile":767,"viewport_tablet":1024,"active_breakpoints":["viewport_mobile","viewport_tablet"],"global_image_lightbox":"yes","lightbox_enable_counter":"yes","lightbox_enable_fullscreen":"yes","lightbox_enable_zoom":"yes","lightbox_enable_share":"yes","lightbox_title_src":"title","lightbox_description_src":"description"},"post":{"id":10,"title":"Listy%20Go%20WordPress","excerpt":"","featuredImage":false}};</script>
 <?php //} ?>
 <script src="<?php echo $assets;?>plugins/elementor/assets/js/frontend.min.js?ver=3.13.4" id="elementor-frontend-js"></script>
-<script type="application/ld+json">{
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "@id": ".//",
-    "url": ".//"
-}</script>
+<!-- Removed broken Schema.org block - handled in classified-details.php -->
 <script src="<?php echo $assets;?>assets/js/custom.js?ver=<?php echo time();?>"></script>
 <link href="<?php echo base_url(); ?>resources/backend/toast-master/css/jquery.toast.css" rel="stylesheet">
 <script src="<?php echo base_url(); ?>resources/backend/toast-master/js/jquery.toast.js"></script>
@@ -831,13 +826,17 @@ jQuery(document).ready(function () {
 <!-- Script to initialize Google Maps autocomplete -->
 <script>
 
- let locationLink = document.getElementById('locationLink');
- let cityPopup = document.querySelector('.cityPopup');
+// Only initialize if not already initialized
+if (typeof locationLink === 'undefined') {
+    let locationLink = document.getElementById('locationLink');
+    let cityPopup = document.querySelector('.cityPopup');
 
- document.getElementById('locationLink').addEventListener('click',()=>{
-
-      cityPopup.style.display = 'block';
- });
+    if (locationLink && cityPopup) {
+        locationLink.addEventListener('click',()=>{
+            cityPopup.style.display = 'block';
+        });
+    }
+}
 
  document.getElementById('closeBtn').addEventListener('click',()=>{
        cityPopup.style.display = 'none';

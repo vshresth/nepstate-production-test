@@ -965,4 +965,220 @@ function addAnchorTags($text) {
 </main></div>
 </div>
 
+<!-- DEBUG: Show available business data -->
+<?php 
+// Uncomment the line below to see debug info in HTML source
+// echo "<!-- DEBUG - Available JSON data for " . $row->title . ": " . print_r($json, true) . " -->";
+// echo "<!-- Available fields: " . implode(', ', array_keys((array)$json)) . " -->";
+?>
+
+<!-- Schema.org Structured Data for Business Listings -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "<?php echo htmlspecialchars($row->title, ENT_QUOTES, 'UTF-8'); ?>",
+  "description": "<?php echo htmlspecialchars(substr(strip_tags($json->description ?? ''), 0, 300), ENT_QUOTES, 'UTF-8'); ?>",
+  "url": "<?php echo base_url() . 'classified/detail/' . $row->slug; ?>",
+  "image": "<?php echo htmlspecialchars($og_image, ENT_QUOTES, 'UTF-8'); ?>",
+  "datePublished": "<?php echo date('Y-m-d', strtotime($row->created_at)); ?>",
+  "dateModified": "<?php echo date('Y-m-d', strtotime($row->updated_at ?? $row->created_at)); ?>"<?php 
+    // Add conditional fields
+    $additional_fields = [];
+    
+    // Add phone if available - check JSON fields first (primary source), then database columns
+    $phone = '';
+    if(isset($json->contact_number) && !empty($json->contact_number)) {
+        $phone = $json->contact_number;
+    } elseif(isset($json->phone) && !empty($json->phone)) {
+        $phone = $json->phone;
+    } elseif(isset($json->telephone) && !empty($json->telephone)) {
+        $phone = $json->telephone;
+    } elseif(isset($json->contact) && !empty($json->contact)) {
+        $phone = $json->contact;
+    } elseif(isset($row->phone) && !empty($row->phone)) {
+        $phone = $row->phone;
+    } elseif(isset($row->telephone) && !empty($row->telephone)) {
+        $phone = $row->telephone;
+    } elseif(isset($row->contact) && !empty($row->contact)) {
+        $phone = $row->contact;
+    }
+    
+    if(!empty($phone)) {
+        $additional_fields[] = '"telephone": "' . htmlspecialchars($phone, ENT_QUOTES, 'UTF-8') . '"';
+    }
+    
+    // Add address - make it required for LocalBusiness
+    $address_parts = [];
+    
+    // Check JSON fields first (primary source), then database fields for address components
+    $street_address = '';
+    if(isset($json->address) && !empty($json->address)) {
+        $street_address = $json->address;
+    } elseif(isset($json->street) && !empty($json->street)) {
+        $street_address = $json->street;
+    } elseif(isset($row->address) && !empty($row->address)) {
+        $street_address = $row->address;
+    } elseif(isset($row->street) && !empty($row->street)) {
+        $street_address = $row->street;
+    }
+    
+    $city = '';
+    if(isset($json->city) && !empty($json->city)) {
+        $city = $json->city;
+    } elseif(isset($json->location) && !empty($json->location)) {
+        $city = $json->location;
+    } elseif(isset($row->city) && !empty($row->city)) {
+        $city = $row->city;
+    } elseif(isset($row->location) && !empty($row->location)) {
+        $city = $row->location;
+    } elseif(isset($json->address) && !empty($json->address)) {
+        // Try to extract city from full address string (e.g., "53-33 37th Road, Woodside, NY, USA")
+        if(preg_match('/,\s*([^,]+),\s*[A-Z]{2}/', $json->address, $matches)) {
+            $city = trim($matches[1]);
+        }
+    } elseif(isset($row->address) && !empty($row->address)) {
+        // Try to extract city from database address field
+        if(preg_match('/,\s*([^,]+),\s*[A-Z]{2}/', $row->address, $matches)) {
+            $city = trim($matches[1]);
+        }
+    }
+    
+    $state = '';
+    if(isset($json->state) && !empty($json->state)) {
+        $state = $json->state;
+    } elseif(isset($json->province) && !empty($json->province)) {
+        $state = $json->province;
+    } elseif(isset($row->state) && !empty($row->state)) {
+        $state = $row->state;
+    } elseif(isset($row->province) && !empty($row->province)) {
+        $state = $row->province;
+    }
+    
+    $zip_code = '';
+    // Check JSON fields first (primary source)
+    if(isset($json->zip_code) && !empty($json->zip_code)) {
+        $zip_code = $json->zip_code;
+    } elseif(isset($json->zip) && !empty($json->zip)) {
+        $zip_code = $json->zip;
+    } elseif(isset($json->postal_code) && !empty($json->postal_code)) {
+        $zip_code = $json->postal_code;
+    } elseif(isset($json->zipcode) && !empty($json->zipcode)) {
+        $zip_code = $json->zipcode;
+    } elseif(isset($json->postal) && !empty($json->postal)) {
+        $zip_code = $json->postal;
+    } 
+    // Then check database columns
+    elseif(isset($row->zip_code) && !empty($row->zip_code)) {
+        $zip_code = $row->zip_code;
+    } elseif(isset($row->zip) && !empty($row->zip)) {
+        $zip_code = $row->zip;
+    } elseif(isset($row->postal_code) && !empty($row->postal_code)) {
+        $zip_code = $row->postal_code;
+    } elseif(isset($row->zipcode) && !empty($row->zipcode)) {
+        $zip_code = $row->zipcode;
+    } elseif(isset($row->postal) && !empty($row->postal)) {
+        $zip_code = $row->postal;
+    } 
+    // Finally try to extract from address strings
+    elseif(isset($json->address) && !empty($json->address)) {
+        // Try multiple patterns to extract ZIP code from full address string (JSON first)
+        if(preg_match('/\b(\d{5}(-\d{4})?)\b/', $json->address, $matches)) {
+            $zip_code = $matches[1];
+        } elseif(preg_match('/\b(\d{5})\b/', $json->address, $matches)) {
+            $zip_code = $matches[1];
+        } elseif(preg_match('/ZIP[:\s]*(\d{5}(-\d{4})?)/i', $json->address, $matches)) {
+            $zip_code = $matches[1];
+        } elseif(preg_match('/\b(\d{5})-\d{4}\b/', $json->address, $matches)) {
+            $zip_code = $matches[1]; // Just the 5-digit part
+        }
+    } elseif(isset($row->address) && !empty($row->address)) {
+        // Try multiple patterns to extract ZIP code from database address field
+        if(preg_match('/\b(\d{5}(-\d{4})?)\b/', $row->address, $matches)) {
+            $zip_code = $matches[1];
+        } elseif(preg_match('/\b(\d{5})\b/', $row->address, $matches)) {
+            $zip_code = $matches[1];
+        } elseif(preg_match('/ZIP[:\s]*(\d{5}(-\d{4})?)/i', $row->address, $matches)) {
+            $zip_code = $matches[1];
+        } elseif(preg_match('/\b(\d{5})-\d{4}\b/', $row->address, $matches)) {
+            $zip_code = $matches[1]; // Just the 5-digit part
+        }
+    }
+    
+    // Add address components if available
+    if(!empty($street_address)) $address_parts[] = '"streetAddress": "' . htmlspecialchars($street_address, ENT_QUOTES, 'UTF-8') . '"';
+    if(!empty($city)) $address_parts[] = '"addressLocality": "' . htmlspecialchars($city, ENT_QUOTES, 'UTF-8') . '"';
+    if(!empty($state)) $address_parts[] = '"addressRegion": "' . htmlspecialchars($state, ENT_QUOTES, 'UTF-8') . '"';
+    if(!empty($zip_code)) $address_parts[] = '"postalCode": "' . htmlspecialchars($zip_code, ENT_QUOTES, 'UTF-8') . '"';
+    
+    
+    // Add country with proper format - check JSON fields first (primary source), then database columns
+    $country = '';
+    if(isset($json->country) && !empty($json->country)) {
+        $country = $json->country;
+    } elseif(isset($json->country_name) && !empty($json->country_name)) {
+        $country = $json->country_name;
+    } elseif(isset($json->nation) && !empty($json->nation)) {
+        $country = $json->nation;
+    } elseif(isset($row->country) && !empty($row->country)) {
+        $country = $row->country;
+    } elseif(isset($row->country_name) && !empty($row->country_name)) {
+        $country = $row->country_name;
+    } elseif(isset($row->nation) && !empty($row->nation)) {
+        $country = $row->nation;
+    }
+    
+    if(!empty($country)) {
+        // Use simple country code format (Google prefers this)
+        $country_code = 'US'; // Default to US
+        if(stripos($country, 'united states') !== false || stripos($country, 'usa') !== false) {
+            $country_code = 'US';
+        } elseif(stripos($country, 'canada') !== false) {
+            $country_code = 'CA';
+        } elseif(stripos($country, 'uk') !== false || stripos($country, 'united kingdom') !== false) {
+            $country_code = 'GB';
+        }
+        
+        $address_parts[] = '"addressCountry": "' . $country_code . '"';
+    }
+    
+    // Always add address (use default values if missing)
+    if(empty($address_parts)) {
+        $address_parts[] = '"addressLocality": "United States"';
+    }
+    
+    $additional_fields[] = '"address": {
+    "@type": "PostalAddress",
+    ' . implode(",\n    ", $address_parts) . '
+  }';
+    
+    // Add cuisine-specific fields for restaurants
+    if($category->title != 'Services' && $category->title != 'Events') {
+        $additional_fields[] = '"servesCuisine": "Nepalese"';
+        
+        // Add smart priceRange based on business category
+        $price_range = "$$"; // Default moderate pricing
+        
+        // Set appropriate price range based on business category
+        if(stripos($category->title, 'restaurant') !== false || stripos($category->title, 'food') !== false) {
+            $price_range = "$$"; // Restaurants typically moderate pricing
+        } elseif(stripos($category->title, 'law') !== false || stripos($category->title, 'legal') !== false) {
+            $price_range = "$$$"; // Legal services typically higher pricing
+        } elseif(stripos($category->title, 'consult') !== false || stripos($category->title, 'professional') !== false) {
+            $price_range = "$$$"; // Professional services higher pricing
+        } elseif(stripos($category->title, 'retail') !== false || stripos($category->title, 'store') !== false) {
+            $price_range = "$$"; // Retail moderate pricing
+        }
+        
+        $additional_fields[] = '"priceRange": "' . $price_range . '"';
+    }
+    
+    // Output additional fields
+    if(!empty($additional_fields)) {
+        echo ",\n  " . implode(",\n  ", $additional_fields);
+    }
+  ?>
+}
+</script>
+
 <?php include("common/footer.php"); ?>
