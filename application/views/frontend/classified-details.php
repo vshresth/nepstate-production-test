@@ -940,13 +940,7 @@ function addAnchorTags($text) {
                        </a>
                     </div>
                 <?php } ?> 
-                 <div class="google_ad" id="dummy-ad">
-                  <div class="ad_inner">
-                     
-                     <span>Google Ad</span><br>
-                     <span> 350x400</span>
-                  </div>
-               </div>        
+                 <?php include("common/google_ads_box.php"); ?>        
             </aside>
         
     </div>
