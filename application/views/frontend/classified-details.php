@@ -65,7 +65,7 @@
             <section class="single-listing-carousel-wrap " <?php if(count($images) ==  1){ ?> style="text-align: center"<?php } ?>>
                 <?php if(count($images) ==  1){ ?>
                     <a href="<?php echo $images[0]->image;?>" data-lightbox="top_slider-<?php echo $ki;?>" class="image_popup" >
-                        <img src="<?php echo $images[0]->image;?>" class="attachment-listygo-size-4 size-listygo-size-4" alt="" decoding="async" title="" style="object-fit: cover; border-radius: 10px; width: 100%;">  
+                        <img src="<?php echo $images[0]->image;?>" class="attachment-listygo-size-4 size-listygo-size-4" alt="" decoding="async" loading="lazy" title="" style="object-fit: cover; border-radius: 10px; width: 100%;" loading="lazy">  
                     </a>
 
                 <?php } else if(count($images) ==  2){ ?>
@@ -73,7 +73,7 @@
                         <?php foreach($images as $ki => $img){
                         ?>
                                  <a href="<?php echo $img->image;?>" data-lightbox="top_slider-<?php echo $ki;?>" class="double_imm" >
-                                <img src="<?php echo $img->image;?>" class="attachment-listygo-size-4 size-listygo-size-4" alt="" decoding="async" title="" style="object-fit: cover; border-radius: 10px; width: 100%;">  
+                                <img src="<?php echo $img->image;?>" class="attachment-listygo-size-4 size-listygo-size-4" alt="" decoding="async" loading="lazy" title="" style="object-fit: cover; border-radius: 10px; width: 100%;" loading="lazy">  
                             </a>
                         <?php } ?>
                     </div>
@@ -85,7 +85,7 @@
                                  <?php foreach($images as $ki => $img){?>
                                     <div class="swiper-slide nav-item ">
                                         <a href="<?php echo $img->image;?>" data-lightbox="top_slider-<?php echo $ki;?>" >
-                                            <img src="<?php echo $img->image;?>" class="attachment-listygo-size-4 size-listygo-size-4" alt="" decoding="async" title="" style="object-fit: cover;">                                            </a>
+                                            <img src="<?php echo $img->image;?>" class="attachment-listygo-size-4 size-listygo-size-4" alt="" decoding="async" loading="lazy" title="" style="object-fit: cover;" loading="lazy">                                            </a>
                                     </div>
                                 <?php } ?>                               
                                                                            
@@ -111,7 +111,7 @@
                 <div class="col-md-7">
                     <div class="listingDetails-header">
                                                 <figure class="listingDetails-header__thumb" style="height: 100px; width:100px">
-                            <img src="<?php echo $images[0]->image;?>" class="attachment-full size-full" alt="" decoding="async" title="" style="height: 100%; width: 100%;">                        </figure>
+                            <img src="<?php echo $images[0]->image;?>" class="attachment-full size-full" alt="" decoding="async" loading="lazy" title="" style="height: 100%; width: 100%;" loading="lazy">                        </figure>
                                                 <div class="listingDetails-header__content">
                             <div class="listingDetails-header__fetures">
                               <ul>
@@ -227,9 +227,9 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true"><img src="<?php echo $assets;?>assets/images/cross.svg" alt="Cross"></span>
+                            <span aria-hidden="true"><img src="<?php echo $assets;?>assets/images/cross.svg" alt="Cross" loading="lazy"></span>
                         </button>
-                        <img src="<?php echo $assets;?>assets/images/popup.png" alt="Popup">
+                        <img src="<?php echo $assets;?>assets/images/popup.png" alt="Popup" loading="lazy">
                         <h5 class="modal-title" id="exampleModalLongTitle">Share This Link Via</h5>
                     </div>
                     <div class="modal-body">
@@ -280,7 +280,7 @@
                       <div class="directory-block__poster__thumb">
           <a class="directory-block__poster__link--image" href="./../../author/martin/index.html"> -->
 
-     <!-- <img src="<?php echo $user->profile_pic == 'dummy_image.png' ? base_url()."resources/uploads/profiles/".$user->profile_pic : $user->profile_pic ;?>" class="attachment-80x80 size-80x80" alt="" decoding="async" title="" style="height: 70px; width: 80px;">        </a> -->
+     <!-- <img src="<?php echo $user->profile_pic == 'dummy_image.png' ? base_url()."resources/uploads/profiles/".$user- loading="lazy">profile_pic : $user->profile_pic ;?>" class="attachment-80x80 size-80x80" alt="" decoding="async" title="" style="height: 70px; width: 80px;">        </a> -->
           <!-- </div>
                 </div> -->
             <!-- <h4 class="author-name">
@@ -335,7 +335,7 @@
                                          <?php foreach($images_gallery as $ki => $img){?>
                                             <div class="swiper-slide nav-item" style="height: auto;" >
                                                 <a data-lightbox="iabc-<?php echo $ki;?>" href="<?php echo $img->image;?>" >
-                                                    <img src="<?php echo $img->image;?>" class="attachment-listygo-size-4 size-listygo-size-4" alt="" decoding="async" title="" style="object-fit: cover; height:170px"> 
+                                                    <img src="<?php echo $img->image;?>" class="attachment-listygo-size-4 size-listygo-size-4" alt="" decoding="async" loading="lazy" title="" style="object-fit: cover; height:170px" loading="lazy"> 
                                                 </a>
                                             </div>
                                         <?php } ?>                               
@@ -630,7 +630,7 @@ function addAnchorTags($text) {
                         <li class="review even thread-even depth-1  rtrs-main-review" id="div-comment-12"> 
                             <div class="rtrs-each-review  "> 
                                     <div class="rtrs-review-imgholder">
-                                        <img src="<?php echo $image_user;?>" alt="" class="image_64">    
+                                        <img src="<?php echo $image_user;?>" alt="" class="image_64" loading="lazy">    
                                     </div> 
                                     <div class="rtrs-review-body"> 
                                         <ul class="rtrs-review-meta">  
@@ -733,7 +733,7 @@ function addAnchorTags($text) {
                 <div class="modal-header">
                     <h5 class="modal-title" id="rtcl-report-abuse-modal-label">Report Abuse</h5>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true"><img src="<?php echo $assets;?>assets/images/cross.svg" alt="Cross"></span></button>
+                        <span aria-hidden="true"><img src="<?php echo $assets;?>assets/images/cross.svg" alt="Cross" loading="lazy"></span></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -827,7 +827,7 @@ function addAnchorTags($text) {
                 <!-- <div class="author-logo-wrapper">
                           <div class="directory-block__poster__thumb">
               <a class="directory-block__poster__link--image">
-           <img src="<?php echo $user->profile_pic == 'dummy_image.png' ? base_url()."resources/uploads/profiles/".$user->profile_pic : $user->profile_pic;?>" class="attachment-80x80 size-80x80" alt="" decoding="async" title="" style="height: 70px; width: 80px;">        </a> -->
+           <img src="<?php echo $user->profile_pic == 'dummy_image.png' ? base_url()."resources/uploads/profiles/".$user- loading="lazy">profile_pic : $user->profile_pic;?>" class="attachment-80x80 size-80x80" alt="" decoding="async" title="" style="height: 70px; width: 80px;">        </a> -->
               <!-- </div> -->
                     <!-- </div> -->
                 <!-- <h4 class="author-name">
@@ -893,13 +893,13 @@ function addAnchorTags($text) {
                     <li class="media" style="display: flex !important;">
                         <div class="item-img">
                                 <a href="<?php echo base_url();?>classified/detail/<?php echo $srow->slug;?>" class="item-figure">
-                                    <img src="<?php echo $images[0]->image;?>" class="attachment-thumbnail size-thumbnail wp-post-image" alt="" decoding="async" title="">
+                                    <img src="<?php echo $images[0]->image;?>" class="attachment-thumbnail size-thumbnail wp-post-image" alt="" decoding="async" loading="lazy" title="" loading="lazy">
                                 </a>
                             </div>
                             <div class="media-body">
                                 <h4 class="item-title"><a href="<?php echo base_url();?>classified/detail/<?php echo $srow->slug;?>"><?php echo $srow->title;?></a></h4>
                             <span>
-                                <img src="<?php echo $assets;?>assets/images/icon-calendar.png" alt="Calendar">
+                                <img src="<?php echo $assets;?>assets/images/icon-calendar.png" alt="Calendar" loading="lazy">
                                 <?php echo date("F d, Y", strtotime($srow->created_at));?>
                             </span>
                         </div>
@@ -925,7 +925,7 @@ function addAnchorTags($text) {
                     <a href="<?php echo $link_to_display;?>" data-lightbox="image-<?php echo $k;?>" target="_blank">
                         <div class="">
                             <b style="margin-bottom: 10px; float: left; color: #2a2a2a;">Sponsored Ad</b>
-                        <img width="320" height="420" src="<?php echo $get_blog_sidebar->image;?>" class="image wp-image-3499  attachment-medium size-medium" alt="" decoding="async" style="max-width: 100%; height: auto;" srcset="<?php echo $get_blog_sidebar->image;?> 320w, <?php echo $get_blog_sidebar->image;?> 350w" sizes="(max-width: 320px) 100vw, 320px" title="">
+                        <img width="320" height="420" src="<?php echo $get_blog_sidebar->image;?>" class="image wp-image-3499  attachment-medium size-medium" alt="" decoding="async" loading="lazy" style="max-width: 100%; height: auto;" srcset="<?php echo $get_blog_sidebar-image;?> 320w, <?php echo $get_blog_sidebar->image;?> 350w" sizes="(max-width: 320px) 100vw, 320px" title="">
                        
                     </div>
                     </a>

@@ -252,10 +252,10 @@ if(!isset($_SESSION['show_popup_login'])){
     </select>
 <div class="rtcl-view-switcher" >
             <a class="rtcl-view-trigger list" data-type="list" href="javascript:;" onclick="do_change_view('list')">
-            <img src="<?php echo $assets;?>assets/images/icon-list.svg" alt="">
+            <img src="<?php echo $assets;?>assets/images/icon-list.svg" alt="" loading="lazy">
         </a>
             <a class="rtcl-view-trigger active grid" data-type="grid" href="javascript:;" onclick="do_change_view('grid')">
-            <img src="<?php echo $assets;?>assets/images/icon-large.svg" alt="">
+            <img src="<?php echo $assets;?>assets/images/icon-large.svg" alt="" loading="lazy">
         </a>
     </div>
 </div>

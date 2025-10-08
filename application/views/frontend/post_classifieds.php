@@ -141,7 +141,7 @@
                                                                     <i class="fa fa-trash" title="Remove Image"></i>
                                                                 </div>
                                                                 
-                                                                <img src="<?php echo $value;?>">
+                                                                <img src="<?php echo $value;?>" loading="lazy">
                                                                 <div class="upload_image_name" title="<?php echo $value;?>">
                                                                     <?php echo $value;?>
                                                                 </div>
@@ -759,7 +759,7 @@ document.getElementById('couponCancelBtn').addEventListener('click', (event) =>{
             });
 
             $("#files_list").show();
-            $("#files_list").html('<div class="loadin_image"><img src="<?php echo $assets;?>assets/images/gear.gif"> Uploading...</div>');
+            $("#files_list").html('<div class="loadin_image"><img src="<?php echo $assets;?>assets/images/gear.gif" loading="lazy"> Uploading...</div>');
             $.ajax({
                 url: '<?php echo base_url()."nepstate/upload_multiple"; ?>',
                 dataType: 'text',
@@ -833,7 +833,7 @@ document.getElementById('couponCancelBtn').addEventListener('click', (event) =>{
             });
 
             $("#files_list_others").show();
-            $("#files_list_others").html('<div class="loadin_image"><img src="<?php echo $assets;?>assets/images/gear.gif"> Uploading...</div>');
+            $("#files_list_others").html('<div class="loadin_image"><img src="<?php echo $assets;?>assets/images/gear.gif" loading="lazy"> Uploading...</div>');
             $.ajax({
                 url: '<?php echo base_url()."nepstate/upload_multiple_gallery"; ?>',
                 dataType: 'text',
