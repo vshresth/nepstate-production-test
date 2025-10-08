@@ -51,14 +51,14 @@
 							</div>
 		</section>
 		<?php if($cat_data->slug == "jobs"){?>
-			<div class="ad-container" id="dummy-ad" style="margin-bottom: 30px; margin-top: 25px;">
-			<img src="https://via.placeholder.com/1050x190" alt="Dummy Ad">
+			<div class="ad-container" id="jobs-ad" style="margin-bottom: 30px; margin-top: 25px;">
+			<?php include(FCPATH . "application/views/frontend/common/google_ads_box.php"); ?>
 			</div>
 		<?php } ?>
 
 		<?php if($cat_data->slug == "it-trainings"){?>
-			<div class="ad-container" id="dummy-ad" style="margin-bottom: 30px; margin-top: 25px;">
-			<img src="https://via.placeholder.com/1050x190" alt="Dummy Ad">
+			<div class="ad-container" id="it-trainings-ad" style="margin-bottom: 30px; margin-top: 25px;">
+			<?php include(FCPATH . "application/views/frontend/common/google_ads_box.php"); ?>
 			</div>
 		<?php } ?>
 

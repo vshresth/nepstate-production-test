@@ -1,7 +1,4 @@
 <?php
-// Test: Let's see if this file is being loaded
-echo "<!-- Google Ads Box File Loaded -->";
-
 // Only show ad container if Google Ads is configured and working
 $google_ads_enabled = true; // Set to true when Google AdSense is approved and working
 
