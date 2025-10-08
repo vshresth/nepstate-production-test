@@ -228,7 +228,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 					
 						<div class="webLogo" style="display:flex; align-items:center; flex-direction:column; position:relative;">
 							<a href="<?php echo base_url();?>" class="main-logo">
-								<img  style="width: 170px;" src="<?php echo settings()->site_logo; ?>" class="attachment-full size-full siteLogo" alt="" title="">
+								<img  style="width: 170px;" src="<?php echo settings()->site_logo; ?>" class="attachment-full size-full siteLogo" alt="" title="" loading="lazy">
 							</a>
 		
 					
@@ -243,7 +243,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 									<div class="langItem <?php if(userCountryId() == $lang->id){echo "selectedLangItem";}?>" >
 										<a href="<?php echo base_url().'update-user-country/'.$lang->id; ?>?type=insideweb" class="updateCountry">
 
-										<img src="<?php  echo $lang->flag; ?>">
+										<img src="<?php  echo $lang->flag; ?>" loading="lazy">
 										<span class="countryHeading_  <?php if(userCountryId() == $lang->id){echo "selectedLangItemHeading";}?>"><?php echo $lang->title; ?></span>
 										</a>
 									</div>
@@ -259,9 +259,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 	
 					<div class="header-logo logo-white sticky-logo">
 					<a href="<?php echo base_url();?>" class="logo-light">
-						<img width="170" src="<?php echo settings()->site_logo; ?>" class="attachment-full size-full" alt="" decoding="async" title="">	</a>
+						<img width="170" src="<?php echo settings()->site_logo; ?>" class="attachment-full size-full" alt="" decoding="async" title="" loading="lazy">	</a>
 					<a href="<?php echo base_url();?>" class="logo-dark">
-						<img width="170" src="<?php echo settings()->site_logo; ?>" class="attachment-full size-full" alt="" decoding="async" title="">	</a>
+						<img width="170" src="<?php echo settings()->site_logo; ?>" class="attachment-full size-full" alt="" decoding="async" title="" loading="lazy">	</a>
 					</div>                
 				</div>
 
@@ -326,7 +326,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <ul>
 		
 		<li id="menu-item-20" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home current-menu-item page_item page-item-10 current_page_item current-menu-ancestor current-menu-parent current_page_parent current_page_ancestor  menu-item-20 userCountryInHeader ">
-			<a href="javascript:void(0)"  onclick="showCountryPopupToggle()" class=""  aria-current="page"><img src="<?php echo getCountryInfo()->flag ?? ''; ?>" > </a>
+			<a href="javascript:void(0)"  onclick="showCountryPopupToggle()" class=""  aria-current="page"><img src="<?php 
+				$countryInfo = getCountryInfo();
+				echo isset($countryInfo->flag) ? $countryInfo->flag : '';
+			?>" loading="lazy"> </a>
 		</li>
             <li class="header-login" style="margin-left:0px;">
                 <a <?php if(isset($_SESSION['LISTYLOGIN'])){ ?>href="javascript:;" onclick="show_profile_option()"<?php } else {?>href="javascript:;" onclick="show_login_popup()"<?php } ?> class="login-btn">
@@ -397,7 +400,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="offcanvas-content">
       <div class="offcanvas-logo">
          <a href="<?php echo base_url();?>" class="main-logo rt-anima rt-anima--one">
-            <img width="130" height="55" src="<?php echo settings()->site_logo; ?>" class="attachment-full size-full" alt="" decoding="async" title="">         </a>
+            <img width="130" height="55" src="<?php echo settings()->site_logo; ?>" class="attachment-full size-full" alt="" decoding="async" title="" loading="lazy">         </a>
       </div>
       <div class="offcanvas-info">
                   <span class="title rt-anima rt-anima--two">Contract Information</span>
@@ -572,14 +575,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 		
 </style>
 
-<div class="outer_wrap" id="country_popup" style='display:<?php echo  userSelectOrNotCountry() != false ? 'none' : 'block';  ?>' style="height:200px;">
+<div class="outer_wrap" id="country_popup" style='display:<?php echo  userSelectOrNotCountry() != false ? 'none' : 'block';  ?>;'>
     <div class="outer_wrap_inner">
         <div class="center_white_outer" style="height: auto; padding-bottom: 30px;">
-		<a href="<?php echo base_url().'cancel-country-selection'; ?>"> 
-			<div class="close_poup">
-                <i class="fa fa-close"></i>
-            </div>
-			</a>
+		<div class="close_poup" onclick="closeHeaderCountryPopup()" style="cursor: pointer;"> 
+			<i class="fa fa-close"></i>
+		</div>
         
             <main id="main" class="site-main">
 				<h6 style="text-align:center; margin-top:10px;">Select Country</h6>
@@ -593,10 +594,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           
 		 $listOfCountries = $this->db->get('admin_countries')->result_object();
           foreach ($listOfCountries as $country) {
-             echo '<a href='.base_url().'update-user-country/'.$country->id.'?type=update-country'.$isSearchPage.'  class="country-card">';
+             echo '<a href="'.base_url().'update-user-country/'.$country->id.'?type=update-country'.$isSearchPage.'" class="country-card">';
 
             // echo '<a href="#" data-toggle="modal" data-target="#exampleModal" class="country-card" onclick="showCitiesPopup('.$country->id.')">';
-            echo '<img src="' . $country->flag . '" alt="' . $country->title . '" class="country-flag">';
+            echo '<img src="' . $country->flag . '" alt="' . $country->title . '" class="country-flag" loading="lazy">';
             echo '<div class="country-name">' . $country->title . '</div>';
             echo '</a>';
         }
@@ -614,6 +615,55 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 	function showCountryPopupToggle() {
     jQuery("#country_popup").fadeToggle(200); 
 }
+
+	function closeHeaderCountryPopup() {
+    jQuery("#country_popup").fadeOut(200);
+}
+
+	// Add outside click and same country prevention
+	document.addEventListener('mousedown', function(event) {
+		const countryPopup = document.getElementById('country_popup');
+		
+		// Check if popup is visible
+		if (countryPopup && countryPopup.style.display !== 'none') {
+			// Outside click - close popup if clicking outside the popup content
+			const centerWhiteOuter = document.querySelector('.center_white_outer');
+			if (centerWhiteOuter && !centerWhiteOuter.contains(event.target)) {
+				// Don't close if clicking on location button elements
+				const isLocationButton = event.target.closest('#cityShow') || 
+										event.target.closest('#citySelect') ||
+										event.target.closest('#locationLink') ||
+										event.target.closest('#citySelectionBtn');
+				
+				if (!isLocationButton) {
+					closeHeaderCountryPopup();
+				}
+			}
+		}
+	});
+	
+	// Same country prevention (separate event listener)
+	document.addEventListener('click', function(event) {
+		if (event.target.classList.contains('country-card') || event.target.closest('.country-card')) {
+			const countryLink = event.target.closest('.country-card') || event.target;
+			const currentCountryId = '<?php echo userCountryId(); ?>';
+			
+			// Extract country ID from href
+			const href = countryLink.getAttribute('href');
+			if (href) {
+				const urlParts = href.split('/');
+				const selectedCountryId = urlParts[urlParts.length - 1].split('?')[0];
+				
+				// If same country is selected, just close popup
+				if (selectedCountryId === currentCountryId) {
+					event.preventDefault();
+					closeHeaderCountryPopup();
+					return false;
+				}
+			}
+		}
+	});
+
 
 
 	function menuMoreToggle() {

@@ -19,6 +19,10 @@ class Nepstate extends ADMIN_Controller {
         $this->load->helper('url');
         $this->load->database();
         $this->db->reconnect();
+        
+        // IP-based country auto-detection - RUN IMMEDIATELY
+        $this->handleIPCountryDetection();
+        
         $this->data['uploads'] = base_url()."resources/uploads/";
 		$this->data['assets'] = base_url()."resources/frontend/";	
 		$this->data['settings'] = settings();
@@ -53,30 +57,6 @@ class Nepstate extends ADMIN_Controller {
 		}
 
 
-	// Check if this is a Google crawler (don't redirect crawlers)
-	$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-	$isGoogleBot = stripos($userAgent, 'googlebot') !== false || 
-				   stripos($userAgent, 'google') !== false ||
-				   stripos($userAgent, 'bingbot') !== false ||
-				   stripos($userAgent, 'crawler') !== false;
-
-	if(!isset($_COOKIE['user_country_id'])  && !isset($_COOKIE['user_city_id']) && !$isGoogleBot) {
-		if ($this->uri->segment(1) !== 'country-selection' && $this->uri->segment(1) !== 'update-user-country') {
-			
-			// redirect(base_url().'update-user-country/1');
-
-			$currentUrl = current_url();
-			$queryString = $_SERVER['QUERY_STRING'];
-			if (!empty($queryString)) {
-				$currentUrl .= '?' . $queryString;
-			}
-
-			// Redirect with return URL
-			redirect(base_url() . 'update-user-country/1?redirect=' . urlencode($currentUrl));
-			
-		}
-		
-	}
 
 				
 
@@ -99,6 +79,35 @@ class Nepstate extends ADMIN_Controller {
 		
 		$this->data['blog_forum_confession_condition_query'] = '';
 		
+	}
+	
+	/**
+	 * Handle IP-based country auto-detection
+	 */
+	private function handleIPCountryDetection() {
+		// Only run if no country is set and not a crawler
+		if (!isset($_COOKIE['user_country_id']) && !isset($_COOKIE['user_city_id'])) {
+			$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+			$isGoogleBot = stripos($userAgent, 'googlebot') !== false || 
+						   stripos($userAgent, 'google') !== false ||
+						   stripos($userAgent, 'bingbot') !== false ||
+						   stripos($userAgent, 'crawler') !== false;
+			
+			// Skip if crawler or on country selection pages
+			if (!$isGoogleBot && $this->uri->segment(1) !== 'country-selection' && $this->uri->segment(1) !== 'update-user-country') {
+				
+				$detectedCountryId = $this->detectCountryFromIP();
+				
+				if ($detectedCountryId) {
+					// Set cookies immediately
+					setcookie("user_country_id", $detectedCountryId, time() + (60 * 60 * 24 * 30), "/");
+					setcookie('userSelectCountryOrNor', $detectedCountryId, time() + (60 * 60 * 24 * 30), '/');
+					
+					// Force reload the page to pick up the new cookies
+					redirect(current_url());
+				}
+			}
+		}
 	}
 
 	public function contactUs()
@@ -6952,5 +6961,163 @@ public function chatMain($productId)
 	public function stripeSecretKey() {
 		//Stripe Secret Key
 		return "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";
+	}
+
+	/**
+	 * Detect country from user's IP address
+	 * Uses multiple IP geolocation services for better accuracy
+	 * @return int|false Country ID from database or false if detection fails
+	 */
+	private function detectCountryFromIP() {
+		$userIP = $this->getUserIP();
+		
+		if (!$userIP || $userIP === '127.0.0.1' || $userIP === '::1') {
+			// Local development or invalid IP
+			return false;
+		}
+		
+		// Try multiple IP geolocation services for better accuracy
+		$services = [
+			'ipapi' => "http://ip-api.com/json/{$userIP}?fields=countryCode",
+			'ipinfo' => "https://ipinfo.io/{$userIP}/json",
+			'ipapi_co' => "https://ipapi.co/{$userIP}/json/"
+		];
+		
+		foreach ($services as $service => $url) {
+			$countryCode = $this->getCountryFromService($url, $service);
+			
+			if ($countryCode) {
+				// Map country code to database ID
+				$countryId = $this->mapCountryCodeToId($countryCode);
+				
+				if ($countryId) {
+					error_log("IP detection successful using {$service}: {$countryCode} -> ID: {$countryId}");
+					return $countryId;
+				}
+			}
+			
+			// Small delay between requests to avoid rate limiting
+			usleep(100000); // 0.1 second
+		}
+		
+		// All services failed
+		error_log("All IP detection services failed for IP: {$userIP}");
+		return false;
+	}
+	
+	/**
+	 * Get user's real IP address (handles proxies and load balancers)
+	 */
+	private function getUserIP() {
+		$ipKeys = ['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR'];
+		
+		foreach ($ipKeys as $key) {
+			if (array_key_exists($key, $_SERVER) === true) {
+				$ip = $_SERVER[$key];
+				if (strpos($ip, ',') !== false) {
+					$ip = explode(',', $ip)[0];
+				}
+				$ip = trim($ip);
+				
+				if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+					return $ip;
+				}
+			}
+		}
+		
+		return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+	}
+	
+	/**
+	 * Get country code from IP geolocation service
+	 */
+	private function getCountryFromService($url, $service) {
+		$context = stream_context_create([
+			'http' => [
+				'timeout' => 3, // 3 second timeout
+				'user_agent' => 'NepState Country Detection'
+			]
+		]);
+		
+		$response = @file_get_contents($url, false, $context);
+		
+		if ($response === false) {
+			return false;
+		}
+		
+		$data = json_decode($response, true);
+		
+		if (!$data) {
+			return false;
+		}
+		
+		switch ($service) {
+			case 'ipapi':
+				return $data['countryCode'] ?? false;
+			case 'ipinfo':
+				return $data['country'] ?? false;
+			case 'ipapi_co':
+				return $data['country_code'] ?? false;
+			default:
+				return false;
+		}
+	}
+	
+	/**
+	 * Map country code to database country ID
+	 */
+	private function mapCountryCodeToId($countryCode) {
+		// Try to find country in database first
+		$country = $this->db->where('code', $countryCode)->get('admin_countries')->row();
+		
+		if ($country) {
+			return $country->id;
+		}
+		
+		// If country not found in database, default to US (ID: 1)
+		error_log("Country code '{$countryCode}' not found in database, defaulting to US");
+		return 1; // US as default
+	}
+	
+	/**
+	 * Test IP detection functionality
+	 * Visit: test.nepstate.com/Nepstate/test_ip_detection
+	 */
+	public function test_ip_detection() {
+		echo "<h2>🧪 IP Detection Test</h2>";
+		echo "<pre>";
+		
+		// Test 1: Get user's real IP
+		$userIP = getUserIP();
+		echo "📍 User IP: {$userIP}\n\n";
+		
+		if (!$userIP || $userIP === '127.0.0.1' || $userIP === '::1') {
+			echo "⚠️  Local development IP detected - skipping detection\n";
+			echo "ℹ️  This is normal for local development\n";
+			echo "ℹ️  Will fallback to country selection page\n";
+			return;
+		}
+		
+		// Test 2: Try IP detection
+		echo "🔍 Testing IP detection...\n";
+		$detectedCountryId = detectCountryFromIP();
+		
+		if ($detectedCountryId) {
+			echo "✅ IP detection successful!\n";
+			echo "🎯 Detected Country ID: {$detectedCountryId}\n";
+			
+			// Get country name from database
+			$country = $this->db->where('id', $detectedCountryId)->get('admin_countries')->row();
+			if ($country) {
+				echo "📍 Country: {$country->title} ({$country->code})\n";
+			}
+			
+			echo "\n✅ Ready for implementation!\n";
+		} else {
+			echo "❌ IP detection failed\n";
+			echo "ℹ️  Will fallback to country selection page\n";
+		}
+		
+		echo "</pre>";
 	}
 }

@@ -105,44 +105,77 @@
   <!-- Script to initialize Google Maps autocomplete -->
   <script>
 
+// Declare variables in global scope
+let locationLink = document.getElementById('locationLink');
+let cityPopup = document.querySelector('.cityPopup');
+let popupDispaly = false;
+
 // Only initialize if not already initialized
 if (typeof locationLink === 'undefined') {
-    let locationLink = document.getElementById('locationLink');
-    let cityPopup = document.querySelector('.cityPopup');
-    let popupDispaly = false;
-
-    if (locationLink && cityPopup) {
-        locationLink.addEventListener('click', () => {
-            cityPopup.style.display = 'block';
-            popupDispaly = true;
-        });
-    }
+    locationLink = document.getElementById('locationLink');
+    cityPopup = document.querySelector('.cityPopup');
+    popupDispaly = false;
 }
 
-document.getElementById('closeBtn').addEventListener('click', () => {
-    cityPopup.style.display = 'none';
-    popupDispaly = false;
-});
+if (locationLink && cityPopup) {
+    locationLink.addEventListener('click', () => {
+        cityPopup.style.display = 'block';
+        popupDispaly = true;
+    });
+}
 
-
-
-document.body.addEventListener('click', function(event) {
-    if (popupDispaly === true && event.target.id !== 'cityShow' && !cityPopup.contains(event.target)) {
+// Function to close popup without loading
+function closePopupWithoutLoading() {
+    if (cityPopup) {
         cityPopup.style.display = 'none';
         popupDispaly = false;
     }
+}
+
+// Close button event listener
+document.getElementById('closeBtn').addEventListener('click', () => {
+    closePopupWithoutLoading();
 });
 
+// Outside click event listener - close without loading
+document.body.addEventListener('click', function(event) {
+    if (popupDispaly === true && cityPopup && !cityPopup.contains(event.target)) {
+        // Don't close if clicking on location button or its children
+        const isLocationButton = event.target.closest('#locationLink') || 
+                                event.target.closest('#citySelectionBtn') ||
+                                event.target.closest('#cityShow') ||
+                                event.target.closest('#citySelect');
+        
+        if (!isLocationButton) {
+            closePopupWithoutLoading();
+        }
+    }
+});
+
+// Prevent form submission if same country is selected
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[action*="updateUserCity"]');
+    const countrySelect = document.getElementById('countrySelect');
+    const currentCountryCode = '<?php echo getCountryCodeById(userCountryId()); ?>';
     
-    document.getElementById('citySelectionBtn').addEventListener('click', function(event) {
-    event.preventDefault();
-
-    var popupCities = document.querySelector('.cityPopup');
-
-    if (popupCities.style.display === "none") {
-        popupCities.style.display = "block";
-    } else {
-        popupCities.style.display = "none";
+    console.log('Form found:', !!form);
+    console.log('Country select found:', !!countrySelect);
+    console.log('Current country code:', currentCountryCode);
+    
+    if (form && countrySelect) {
+        form.addEventListener('submit', function(event) {
+            const selectedCountryCode = countrySelect.value;
+            console.log('Selected country code:', selectedCountryCode);
+            
+            // If same country is selected, just close popup without submitting
+            if (selectedCountryCode === currentCountryCode) {
+                console.log('Same country selected - preventing submission');
+                event.preventDefault();
+                event.stopPropagation();
+                closePopupWithoutLoading();
+                return false;
+            }
+        });
     }
 });
 
