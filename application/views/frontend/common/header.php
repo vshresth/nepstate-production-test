@@ -15,18 +15,18 @@
 
     </style>
     <meta name="google-site-verification" content="HpryjVVurfz1oYsZz9qhw-vZnVwoHUHX0pvUE2Zgi78" />
-   <meta property="og:image" content="<?php echo isset($og_image) ? $og_image : 'https://admin.nepstate.com/images/logo/1739511638.png'; ?>" />
+   <meta property="og:image" content="<?php echo isset($og_image) ? $og_image : 'https://nepstate.com/images/logo/1739511638.png'; ?>" />
    <meta property="og:title" content="<?php echo isset($page_title) ? $page_title : 'NepState - Connecting Nepalese Globally'; ?>" />
    <meta property="og:description" content="<?php echo isset($meta_description) ? $meta_description : 'Discover Nepalese businesses, jobs, events, and community connections worldwide.'; ?>" />
    <meta property="og:url" content="<?php echo isset($canonical_url) ? $canonical_url : base_url(); ?>" />
-   <meta property="og:type" content="website" />
+   <meta property="og:type" content="<?php echo isset($og_type) ? $og_type : 'website'; ?>" />
    <meta property="og:site_name" content="NepState" />
    
    <!-- Twitter Card Tags -->
    <meta name="twitter:card" content="summary_large_image" />
    <meta name="twitter:title" content="<?php echo isset($page_title) ? $page_title : 'NepState - Connecting Nepalese Globally'; ?>" />
    <meta name="twitter:description" content="<?php echo isset($meta_description) ? $meta_description : 'Discover Nepalese businesses, jobs, events, and community connections worldwide.'; ?>" />
-   <meta name="twitter:image" content="<?php echo isset($og_image) ? $og_image : 'https://admin.nepstate.com/images/logo/1739511638.png'; ?>" />
+   <meta name="twitter:image" content="<?php echo isset($og_image) ? $og_image : 'https://nepstate.com/images/logo/1739511638.png'; ?>" />
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-TYFDS5X1PB"></script>
@@ -75,8 +75,9 @@ dataLayer.push({
 		<link rel="stylesheet"  href="<?php echo $assets;?>plugins/elementor/assets/css/frontend.min.css?ver=3.13.4" media="all">
 	<?php } */ ?>
 	<link rel="stylesheet" href="<?php echo $assets;?>plugins/elementor/assets/lib/swiper/css/swiper.min.css?ver=5.3.6" media="all">
-	<link rel="stylesheet" href="<?php echo $uploads;?>elementor/css/post-1731.css?ver=1686043492" media="all">
-	<link rel="stylesheet"  href="<?php echo $uploads;?>elementor/css/post-10.css?ver=1686043493" media="all">
+	<!-- Missing CSS files - commented out to prevent 404 errors -->
+	<!-- <link rel="stylesheet" href="<?php echo $uploads;?>elementor/css/post-1731.css?ver=1686043492" media="all"> -->
+	<!-- <link rel="stylesheet"  href="<?php echo $uploads;?>elementor/css/post-10.css?ver=1686043493" media="all"> -->
 	<!-- <link rel="stylesheet"  href="<?php echo $assets;?>plugins/fluentform/public/css/fluent-forms-elementor-widget.css?ver=4.3.25" media="all"> -->
 	<!-- <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Outfit%3A300%2C400%2C500%2C600%2C700&#038;display=fallback&#038;ver=1.2.4" media="all"> -->
 	<!-- <link rel="stylesheet" href="<?php echo $assets;?>assets/vendor/bootstrap/bootstrap.min.css"> -->
@@ -105,8 +106,10 @@ dataLayer.push({
 	
 	<link rel="canonical" href="<?php echo base_url();?>">
 	<link rel="shortlink" href="<?php echo base_url();?>">
-	<link rel="preload" as="font" type="font/woff2" crossorigin>
-	<link rel="preconnect">
+	<!-- Invalid preload href - commented out to prevent warnings -->
+	<!-- <link rel="preload" as="font" type="font/woff2" crossorigin> -->
+	<!-- Invalid preconnect href - commented out to prevent warnings -->
+	<!-- <link rel="preconnect"> -->
 	
 	<link rel="icon" href="<?php echo settings()->site_logo;?>" sizes="32x32">
 	<link rel="icon" href="<?php echo settings()->site_logo;?>" sizes="192x192">

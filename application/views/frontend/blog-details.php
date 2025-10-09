@@ -15,6 +15,105 @@ if (!isset($_SESSION['LISTYLOGIN'])) {
  
 ?>
 
+<?php 
+	if($this->uri->segment(1)== "confession"){
+		$table_name = 'confessions';
+		$c_table_name = 'confession_comment';
+		$show_image = 0;
+		$url_comment_post = 'post_comment_confession';
+	} else if($this->uri->segment(1)== "blog"){
+		$table_name = 'blogs';
+		$c_table_name = 'blog_comment';
+		$show_image = 1;
+		$url_comment_post = 'post_comment_blog';
+	}
+	else if($this->uri->segment(1)== "forum"){
+		$table_name = 'confessions';
+		$c_table_name = 'confession_comment';
+		$show_image = 1;
+		$url_comment_post = 'post_comment_confession';
+	}
+
+	$row = $this->db->query("SELECT * FROM ".$table_name." WHERE slug = '".$slug."' AND (status =  1 OR status = 0)")->result_object()[0];
+
+	if(empty($row)) {
+		redirect(base_url());
+	}
+
+	// Set SEO variables for Open Graph (social media sharing) - BEFORE header include
+	// Determine content type and set appropriate titles and URLs
+	if($this->uri->segment(1) == "confession"){
+		$content_type = 'Confession';
+		$content_type_lower = 'confession';
+		$canonical_url = base_url() . 'confession/details/' . $row->slug;
+		$default_keywords = 'Nepalese confessions, Nepal community, Nepali stories';
+	} else if($this->uri->segment(1) == "forum"){
+		$content_type = 'Forum';
+		$content_type_lower = 'forum';
+		$canonical_url = base_url() . 'forum/details/' . $row->slug;
+		$default_keywords = 'Nepalese forums, Nepal discussions, Nepali community';
+	} else {
+		$content_type = 'Blog';
+		$content_type_lower = 'blog';
+		$canonical_url = base_url() . 'blog/details/' . $row->slug;
+		$default_keywords = 'Nepalese blog, Nepal news, Nepali community';
+	}
+	
+	$page_title = htmlspecialchars($row->title) . ' - NepState ' . $content_type;
+	$meta_description = !empty($row->description) ? htmlspecialchars(strip_tags($row->description)) : htmlspecialchars(substr(strip_tags($row->content), 0, 160) . '...');
+	$meta_keywords = !empty($row->tags) ? htmlspecialchars($row->tags) : $default_keywords;
+	
+	// Add cache-busting parameter for social media scraping
+	$cache_buster = '?v=' . time();
+	
+	// Enhanced image handling for Open Graph
+	$og_image = '';
+	if (!empty($row->image)) {
+		$raw_image = trim($row->image);
+		
+		// For social media compatibility, use a simple approach
+		if (preg_match('/^https?:\/\//', $raw_image)) {
+			// Keep the admin domain but fix URL encoding for special characters
+			$og_image = str_replace(' ', '%20', $raw_image);
+			$og_image = str_replace('(', '%28', $og_image);
+			$og_image = str_replace(')', '%29', $og_image);
+			
+			// Add cache buster to force Facebook to re-scrape
+			$og_image .= '?v=' . time();
+			
+			// Test if the encoded image is accessible (without cache buster for testing)
+			$test_url = str_replace('?v=' . time(), '', $og_image);
+			$headers = @get_headers($test_url);
+			$is_accessible = $headers && strpos($headers[0], '200') !== false;
+			
+			if (!$is_accessible) {
+				// If encoded image not accessible, use fallback
+				$og_image = 'https://nepstate.com/images/logo/1739511638.png';
+			}
+		} else {
+			// If it's a relative path, make it absolute
+			$og_image = base_url() . ltrim($raw_image, '/');
+		}
+	} else {
+		// Fallback to working logo - Facebook doesn't support data URIs
+		// Use the admin logo which we know works and meets size requirements
+		$og_image = 'https://admin.nepstate.com/images/logo/1739511638.png';
+	}
+	
+	// Set Open Graph type based on content type
+	$og_type = ($content_type_lower == 'confession') ? 'article' : 'article';
+	
+	// Test if image is accessible (for debugging)
+	$image_accessible = false;
+	if (!empty($og_image) && filter_var($og_image, FILTER_VALIDATE_URL)) {
+		$headers = @get_headers($og_image);
+		$image_accessible = $headers && strpos($headers[0], '200') !== false;
+	}
+	
+	// DEBUG: Show final OG image URL
+	echo "<!-- FINAL OG IMAGE URL: " . $og_image . " -->";
+?>
+
 <?php include("common/header.php"); ?>
 <div data-elementor-type="wp-page" data-elementor-id="10" class="elementor elementor-10" style="margin-top: 20px;">
 	<?php include("common/header_full.php"); ?>
@@ -42,31 +141,8 @@ if (!isset($_SESSION['LISTYLOGIN'])) {
 	    </div>
 	<?php } ?>
 </div>
+
 <?php 
-	if($this->uri->segment(1)== "confession"){
-		$table_name = 'confessions';
-		$c_table_name = 'confession_comment';
-		$show_image = 0;
-		$url_comment_post = 'post_comment_confession';
-	} else if($this->uri->segment(1)== "blog"){
-		$table_name = 'blogs';
-		$c_table_name = 'blog_comment';
-		$show_image = 1;
-		$url_comment_post = 'post_comment_blog';
-	}
-	else if($this->uri->segment(1)== "forum"){
-		$table_name = 'confessions';
-		$c_table_name = 'confession_comment';
-		$show_image = 1;
-		$url_comment_post = 'post_comment_confession';
-	}
-
-	$row = $this->db->query("SELECT * FROM ".$table_name." WHERE slug = '".$slug."' AND (status =  1 OR status = 0)")->result_object()[0];
-
-	if(empty($row)) {
-		redirect(base_url());
-	}
-	
 	$user = $this->db->query("SELECT * FROM users WHERE id = ".$row->uID)->result_object()[0];
 	if($user->g_id!=""){
 	   $url_image = $user->profile_pic;
