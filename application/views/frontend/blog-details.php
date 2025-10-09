@@ -502,6 +502,16 @@ if($this->uri->segment(1)=="blog"){
 <?php include("common/footer.php"); ?>
 
 <script>
+// Auto-scroll to blog content on page load (skip the banner ad at top)
+jQuery(document).ready(function() {
+    // Scroll to the main blog content section smoothly
+    var blogSection = jQuery('.blog-details-page');
+    if (blogSection.length) {
+        jQuery('html, body').animate({
+            scrollTop: blogSection.offset().top - 80 // 80px offset for fixed header if any
+        }, 800); // 800ms smooth scroll duration
+    }
+});
 
 function  do_show_share(val) {
         // jQuery(".show_share_button_"+val).css('visibility', 'visible');
