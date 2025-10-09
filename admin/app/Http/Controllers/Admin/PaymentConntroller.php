@@ -12,7 +12,7 @@ class PaymentConntroller extends Controller
 {
     public function index()
     {
-        $payments = PaymentPlan::all();
+        $payments = PaymentPlan::orderBy('sort_order', 'ASC')->orderBy('id', 'ASC')->get();
         return view('payment.index', compact('payments'));
     }
     public function create(){
@@ -130,5 +130,84 @@ class PaymentConntroller extends Controller
         $payment = PaymentPlan::findOrFail($id);
         $payment->delete();
         return redirect()->route('payment.index')->with('success', 'Payment plan deleted successfully.');
+    }
+
+    public function moveUp($id)
+    {
+        $payment = PaymentPlan::findOrFail($id);
+        
+        // If sort_order is null, set it to current position
+        if (is_null($payment->sort_order)) {
+            $payment->sort_order = $id;
+            $payment->save();
+        }
+        
+        $previousPayment = PaymentPlan::where('sort_order', '<', $payment->sort_order)
+            ->orderBy('sort_order', 'DESC')
+            ->first();
+        
+        if ($previousPayment) {
+            $tempOrder = $payment->sort_order;
+            $payment->sort_order = $previousPayment->sort_order;
+            $previousPayment->sort_order = $tempOrder;
+            
+            $payment->save();
+            $previousPayment->save();
+            
+            return redirect()->route('payment.index')->with('success', 'Payment plan moved up successfully.');
+        }
+        
+        return redirect()->route('payment.index')->with('error', 'Cannot move up - already at top.');
+    }
+
+    public function moveDown($id)
+    {
+        $payment = PaymentPlan::findOrFail($id);
+        
+        // If sort_order is null, set it to current position
+        if (is_null($payment->sort_order)) {
+            $payment->sort_order = $id;
+            $payment->save();
+        }
+        
+        $nextPayment = PaymentPlan::where('sort_order', '>', $payment->sort_order)
+            ->orderBy('sort_order', 'ASC')
+            ->first();
+        
+        if ($nextPayment) {
+            $tempOrder = $payment->sort_order;
+            $payment->sort_order = $nextPayment->sort_order;
+            $nextPayment->sort_order = $tempOrder;
+            
+            $payment->save();
+            $nextPayment->save();
+            
+            return redirect()->route('payment.index')->with('success', 'Payment plan moved down successfully.');
+        }
+        
+        return redirect()->route('payment.index')->with('error', 'Cannot move down - already at bottom.');
+    }
+
+    public function updateOrder(Request $request)
+    {
+        try {
+            $order = $request->input('order');
+            
+            if (!is_array($order)) {
+                return response()->json(['success' => false, 'message' => 'Invalid order data'], 400);
+            }
+            
+            foreach ($order as $item) {
+                if (isset($item['id']) && isset($item['sort_order'])) {
+                    PaymentPlan::where('id', $item['id'])
+                        ->update(['sort_order' => $item['sort_order']]);
+                }
+            }
+            
+            return response()->json(['success' => true, 'message' => 'Order updated successfully']);
+            
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error updating order: ' . $e->getMessage()], 500);
+        }
     }
 }

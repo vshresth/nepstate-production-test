@@ -15,6 +15,7 @@ class PaymentPlan extends Model
         'months',
         'amount',
         'status',
+        'sort_order',
         'category_home_page', //Ad#4
         'website_home_category_section', 
         'website_home_banner', //Ad#1

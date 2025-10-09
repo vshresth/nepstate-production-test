@@ -312,6 +312,9 @@ Route::middleware(['isLoggedIn'])->group(function () {
     Route::get('/payment-plan/{id}/edit', [PaymentConntroller::class, 'edit'])->name('payment.edit');
     Route::put('/payment-plan/{id}/update', [PaymentConntroller::class, 'update'])->name('payment.update');
     Route::delete('/payment-plans{id}/delete', [PaymentConntroller::class, 'destroy'])->name('payment.destroy');
+    Route::post('/payment-plan/{id}/move-up', [PaymentConntroller::class, 'moveUp'])->name('payment.moveUp');
+    Route::post('/payment-plan/{id}/move-down', [PaymentConntroller::class, 'moveDown'])->name('payment.moveDown');
+    Route::post('/payment-plans/update-order', [PaymentConntroller::class, 'updateOrder'])->name('payment.updateOrder');
 
     //--------------------------------------SUB_ADMINS-------------------------------------------
     Route::get('sub-admin', [SubAdminController::class, 'index'])->name('subadmin-index');

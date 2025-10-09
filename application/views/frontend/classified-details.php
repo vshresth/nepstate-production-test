@@ -19,15 +19,51 @@
     $json = json_decode($row->json_content, false);
     $category = $this->db->query("SELECT * FROM categories WHERE slug = '".$row->category."'")->result_object()[0];
     
-    // Load business images for Open Graph
-    $business_images = $this->db->query("SELECT * FROM product_images WHERE product_id = ".$row->id." ORDER BY id ASC LIMIT 1")->result_object();
-    $og_image = !empty($business_images) ? $business_images[0]->image : 'https://admin.nepstate.com/images/logo/1739511638.png';
-    
     // SEO Variables for Business Listing Pages (MUST be before header)
     $page_title = $row->title . " - " . $category->title . " | NepState";
     $meta_description = "Discover " . $row->title . " on NepState. " . substr(strip_tags($json->description), 0, 150) . "...";
     $meta_keywords = $row->title . ", " . $category->title . ", Nepalese business";
     $canonical_url = base_url() . "classified/detail/" . $row->slug;
+    
+    // Enhanced image handling for Open Graph (same as blog/forum/confession fix)
+    $business_images = $this->db->query("SELECT * FROM product_images WHERE product_id = ".$row->id." ORDER BY id ASC LIMIT 1")->result_object();
+    $og_image = '';
+    
+    if (!empty($business_images) && !empty($business_images[0]->image)) {
+        $raw_image = trim($business_images[0]->image);
+        
+        // For social media compatibility, use a simple approach
+        if (preg_match('/^https?:\/\//', $raw_image)) {
+            // Keep the admin domain but fix URL encoding for special characters
+            $og_image = str_replace(' ', '%20', $raw_image);
+            $og_image = str_replace('(', '%28', $og_image);
+            $og_image = str_replace(')', '%29', $og_image);
+            
+            // Add cache buster to force Facebook to re-scrape
+            $og_image .= '?v=' . time();
+            
+            // Test if the encoded image is accessible (without cache buster for testing)
+            $test_url = str_replace('?v=' . time(), '', $og_image);
+            $headers = @get_headers($test_url);
+            $is_accessible = $headers && strpos($headers[0], '200') !== false;
+            
+            if (!$is_accessible) {
+                // If encoded image not accessible, use fallback
+                $og_image = 'https://admin.nepstate.com/images/logo/1739511638.png';
+            }
+        } else {
+            // If it's a relative path, make it absolute
+            $og_image = base_url() . ltrim($raw_image, '/');
+        }
+    } else {
+        // Fallback to working logo
+        $og_image = 'https://admin.nepstate.com/images/logo/1739511638.png';
+    }
+    
+    // Set Open Graph type for classified listings
+    $og_type = 'article';
+    
+    // Open Graph setup complete for classified listings
     
     // Load remaining data
     $images = $this->db->query("SELECT * FROM product_images WHERE gallery = 0 AND product_id = ".$row->id)->result_object();

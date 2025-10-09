@@ -152,7 +152,15 @@
 
 
                                             <?php if($edit != 1){
-                                                $plans_listing = $this->db->query("SELECT * FROM payment_plans WHERE FIND_IN_SET('".$category->id."', cID) > 0 AND status = 1")->result_object();
+                                                // Force fresh query with cache busting
+                                                $plans_listing = $this->db->query("SELECT * FROM payment_plans WHERE FIND_IN_SET('".$category->id."', cID) > 0 AND status = 1 ORDER BY sort_order ASC, id ASC")->result_object();
+                                                
+                                                // Debug: Show the order in HTML comments (remove visible debug box)
+                                                echo "<!-- Listing Plans Order Debug: ";
+                                                foreach($plans_listing as $debug_plan) {
+                                                    echo "ID: " . $debug_plan->id . " | Title: " . $debug_plan->title . " | Sort Order: " . ($debug_plan->sort_order ?? 'NULL') . " | ";
+                                                }
+                                                echo " -->";
                                                 $row = $this->db->query("SELECT * FROM payment_plans WHERE FIND_IN_SET('".$category->id."', cID) > 0 AND status = 1")->result_object()[0];
                                                 $cat_title = $this->db->query("SELECT * FROM categories WHERE id = ".$category->id)->result_object()[0];
 

@@ -821,7 +821,7 @@ jQuery(document).ready(function () {
     <?php } ?>
 });
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXLSGnMNN051ESCBh-mKv__W_m-tbkFlg&libraries=places"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXLSGnMNN051ESCBh-mKv__W_m-tbkFlg&libraries=places"></script>
 
 <!-- Script to initialize Google Maps autocomplete -->
 <script>

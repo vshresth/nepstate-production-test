@@ -65,7 +65,20 @@ class Nepstate extends ADMIN_Controller {
 			// $this->data['country_city_ConditionQuery'] = ' AND country_id = '.userCountryId().' AND (city_id = \'' . userCityId() . '\' OR city_id IS NULL)';
 			$this->data['country_city_ConditionQuery'] = ' AND country_id = ' . userCountryId() . ' AND city_id = \'' . userCityId().'\'';
 
-			$queryCity = "( city_id = '".userCityId()."' OR LOWER(city) = '".strtolower(userCityId())."'  OR LOWER(state) = '".strtolower(userCityId())."' )";
+			// Get metro area cities for the selected location
+			$metroCities = $this->getMetroAreaCities(userCityId());
+			
+			if (!empty($metroCities)) {
+				$metroCityConditions = array();
+				foreach ($metroCities as $city) {
+					$metroCityConditions[] = "LOWER(city) = '".strtolower($city)."'";
+					$metroCityConditions[] = "LOWER(state) = '".strtolower($city)."'";
+				}
+				$queryCity = "( city_id = '".userCityId()."' OR LOWER(city) = '".strtolower(userCityId())."'  OR LOWER(state) = '".strtolower(userCityId())."' OR " . implode(' OR ', $metroCityConditions) . " )";
+			} else {
+				$queryCity = "( city_id = '".userCityId()."' OR LOWER(city) = '".strtolower(userCityId())."'  OR LOWER(state) = '".strtolower(userCityId())."' )";
+			}
+			
 			$this->data['country_city_ConditionQuery_classified'] = ' AND country_id = ' . userCountryId() . ' AND ' .$queryCity;
 			$this->data['country_ConditionQuery'] = ' AND ad_expires > "' . date('Y-m-d') . '" AND country_id = ' . userCountryId(); // only for product ads
 
@@ -88,10 +101,20 @@ class Nepstate extends ADMIN_Controller {
 		// Only run if no country is set and not a crawler
 		if (!isset($_COOKIE['user_country_id']) && !isset($_COOKIE['user_city_id'])) {
 			$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-			$isGoogleBot = stripos($userAgent, 'googlebot') !== false || 
-						   stripos($userAgent, 'google') !== false ||
-						   stripos($userAgent, 'bingbot') !== false ||
-						   stripos($userAgent, 'crawler') !== false;
+		$isGoogleBot = stripos($userAgent, 'googlebot') !== false || 
+					   stripos($userAgent, 'google') !== false ||
+					   stripos($userAgent, 'bingbot') !== false ||
+					   stripos($userAgent, 'crawler') !== false ||
+					   stripos($userAgent, 'facebookexternalhit') !== false ||
+					   stripos($userAgent, 'twitterbot') !== false ||
+					   stripos($userAgent, 'linkedinbot') !== false ||
+					   stripos($userAgent, 'whatsapp') !== false ||
+					   stripos($userAgent, 'telegrambot') !== false ||
+					   stripos($userAgent, 'slackbot') !== false ||
+					   stripos($userAgent, 'discordbot') !== false ||
+					   stripos($userAgent, 'bot') !== false ||
+					   stripos($userAgent, 'spider') !== false ||
+					   stripos($userAgent, 'crawl') !== false;
 			
 			// Skip if crawler or on country selection pages
 			if (!$isGoogleBot && $this->uri->segment(1) !== 'country-selection' && $this->uri->segment(1) !== 'update-user-country') {
@@ -7119,5 +7142,109 @@ public function chatMain($productId)
 		}
 		
 		echo "</pre>";
+	}
+	
+	/**
+	 * Get metro area cities for a given location
+	 * Returns array of city names that are part of the same metro area
+	 */
+	private function getMetroAreaCities($selectedLocation) {
+		// Metro area mappings - key is the main city, value is array of metro cities
+		$metroAreas = array(
+			// Dallas-Fort Worth Metroplex
+			'dallas tx' => array('irving', 'euless', 'plano', 'richardson', 'garland', 'mesquite', 'mckinney', 'frisco', 'allen', 'denton', 'lewisville', 'flower mound', 'colleyville', 'grapevine', 'coppell', 'carrollton', 'the colony', 'keller', 'southlake', 'westlake', 'fort worth', 'arlington', 'grand prairie', 'mansfield', 'cedar hill', 'duncanville', 'desoto', 'lancaster'),
+			'dallas' => array('irving', 'euless', 'plano', 'richardson', 'garland', 'mesquite', 'mckinney', 'frisco', 'allen', 'denton', 'lewisville', 'flower mound', 'colleyville', 'grapevine', 'coppell', 'carrollton', 'the colony', 'keller', 'southlake', 'westlake', 'fort worth', 'arlington', 'grand prairie', 'mansfield', 'cedar hill', 'duncanville', 'desoto', 'lancaster'),
+			
+			// Houston Metro Area
+			'houston tx' => array('sugar land', 'missouri city', 'pearland', 'katy', 'cypress', 'spring', 'the woodlands', 'conroe', 'league city', 'friendswood', 'pasadena', 'baytown', 'deer park', 'la porte', 'webster', 'stafford', 'richmond', 'rosenberg'),
+			'houston' => array('sugar land', 'missouri city', 'pearland', 'katy', 'cypress', 'spring', 'the woodlands', 'conroe', 'league city', 'friendswood', 'pasadena', 'baytown', 'deer park', 'la porte', 'webster', 'stafford', 'richmond', 'rosenberg'),
+			
+			// San Antonio Metro Area
+			'san antonio tx' => array('new braunfels', 'schertz', 'universal city', 'live oak', 'converse', 'windcrest', 'leon valley', 'castle hills', 'terrell hills', 'olmos park'),
+			'san antonio' => array('new braunfels', 'schertz', 'universal city', 'live oak', 'converse', 'windcrest', 'leon valley', 'castle hills', 'terrell hills', 'olmos park'),
+			
+			// Austin Metro Area
+			'austin tx' => array('round rock', 'cedar park', 'pflugerville', 'leander', 'georgetown', 'hutto', 'taylor', 'elgin', 'bastrop', 'san marcos', 'kyle', 'buddy', 'lakeway', 'bee cave', 'west lake hills'),
+			'austin' => array('round rock', 'cedar park', 'pflugerville', 'leander', 'georgetown', 'hutto', 'taylor', 'elgin', 'bastrop', 'san marcos', 'kyle', 'buddy', 'lakeway', 'bee cave', 'west lake hills'),
+			
+			// Phoenix Metro Area
+			'phoenix az' => array('mesa', 'chandler', 'glendale', 'scottsdale', 'gilbert', 'tempe', 'peoria', 'surprise', 'avondale', 'goodyear', 'buckeye', 'queen creek', 'apache junction', 'casa grande'),
+			'phoenix' => array('mesa', 'chandler', 'glendale', 'scottsdale', 'gilbert', 'tempe', 'peoria', 'surprise', 'avondale', 'goodyear', 'buckeye', 'queen creek', 'apache junction', 'casa grande'),
+			
+			// Chicago Metro Area
+			'chicago il' => array('aurora', 'rockford', 'joliet', 'naperville', 'springfield', 'peoria', 'elgin', 'waukegan', 'cicero', 'champaign', 'bloomington', 'arlington heights', 'evanston', 'decatur', 'schaumburg', 'bolingbrook', 'palatine', 'skokie', 'des plaines', 'orland park'),
+			'chicago' => array('aurora', 'rockford', 'joliet', 'naperville', 'springfield', 'peoria', 'elgin', 'waukegan', 'cicero', 'champaign', 'bloomington', 'arlington heights', 'evanston', 'decatur', 'schaumburg', 'bolingbrook', 'palatine', 'skokie', 'des plaines', 'orland park'),
+			
+			// New York Metro Area
+			'new york ny' => array('brooklyn', 'queens', 'bronx', 'staten island', 'yonkers', 'rochester', 'syracuse', 'albany', 'new rochelle', 'mount vernon', 'white plains', 'troy', 'utica', 'schenectady', 'westchester county'),
+			'new york' => array('brooklyn', 'queens', 'bronx', 'staten island', 'yonkers', 'rochester', 'syracuse', 'albany', 'new rochelle', 'mount vernon', 'white plains', 'troy', 'utica', 'schenectady', 'westchester county'),
+			
+			// Los Angeles Metro Area
+			'los angeles ca' => array('long beach', 'santa ana', 'anaheim', 'riverside', 'stockton', 'irvine', 'chula vista', 'fremont', 'san bernardino', 'modesto', 'fontana', 'oxnard', 'moreno valley', 'huntington beach', 'glendale', 'santa clarita', 'garden grove', 'oceanside', 'rancho cucamonga', 'santa rosa', 'ontario', 'corona', 'pomona', 'palmdale', 'salinas', 'pasadena', 'torrance', 'hayward', 'escondido', 'santa clara', 'vallejo'),
+			'los angeles' => array('long beach', 'santa ana', 'anaheim', 'riverside', 'stockton', 'irvine', 'chula vista', 'fremont', 'san bernardino', 'modesto', 'fontana', 'oxnard', 'moreno valley', 'huntington beach', 'glendale', 'santa clarita', 'garden grove', 'oceanside', 'rancho cucamonga', 'santa rosa', 'ontario', 'corona', 'pomona', 'palmdale', 'salinas', 'pasadena', 'torrance', 'hayward', 'escondido', 'santa clara', 'vallejo'),
+			
+			// San Francisco Bay Area
+			'san francisco ca' => array('san jose', 'oakland', 'fremont', 'richmond', 'sunnyvale', 'santa clara', 'san mateo', 'hayward', 'concord', 'vallejo', 'berkeley', 'fairfield', 'antioch', 'daly city', 'santa rosa', 'san leandro', 'livermore', 'redwood city', 'alameda', 'south san francisco', 'union city', 'novato', 'san rafael', 'mountain view', 'redwood city', 'palo alto', 'cupertino', 'foster city', 'belmont', 'san carlos', 'menlo park', 'millbrae', 'burlingame'),
+			'san francisco' => array('san jose', 'oakland', 'fremont', 'richmond', 'sunnyvale', 'santa clara', 'san mateo', 'hayward', 'concord', 'vallejo', 'berkeley', 'fairfield', 'antioch', 'daly city', 'santa rosa', 'san leandro', 'livermore', 'redwood city', 'alameda', 'south san francisco', 'union city', 'novato', 'san rafael', 'mountain view', 'redwood city', 'palo alto', 'cupertino', 'foster city', 'belmont', 'san carlos', 'menlo park', 'millbrae', 'burlingame'),
+			
+			// Seattle Metro Area
+			'seattle wa' => array('spokane', 'tacoma', 'vancouver', 'bellevue', 'kent', 'everett', 'renton', 'yakima', 'federal way', 'spokane valley', 'bellingham', 'kennewick', 'auburn', 'pasco', 'marysville', 'lakewood', 'redmond', 'shoreline', 'richland', 'kirkland', 'burien', 'olympia', 'lacey', 'bremerton', 'puyallup', 'sumner', 'bonney lake', 'enumclaw', 'buckley'),
+			'seattle' => array('spokane', 'tacoma', 'vancouver', 'bellevue', 'kent', 'everett', 'renton', 'yakima', 'federal way', 'spokane valley', 'bellingham', 'kennewick', 'auburn', 'pasco', 'marysville', 'lakewood', 'redmond', 'shoreline', 'richland', 'kirkland', 'burien', 'olympia', 'lacey', 'bremerton', 'puyallup', 'sumner', 'bonney lake', 'enumclaw', 'buckley'),
+			
+			// Denver Metro Area
+			'denver co' => array('colorado springs', 'aurora', 'fort collins', 'lakewood', 'thornton', 'westminster', 'arvada', 'pueblo', 'centennial', 'boulder', 'greeley', 'longmont', 'loveland', 'grand junction', 'broomfield', 'northglenn', 'wheat ridge', 'commerce city', 'englewood', 'greenwood village', 'littleton', 'glendale', 'cherry hills village'),
+			'denver' => array('colorado springs', 'aurora', 'fort collins', 'lakewood', 'thornton', 'westminster', 'arvada', 'pueblo', 'centennial', 'boulder', 'greeley', 'longmont', 'loveland', 'grand junction', 'broomfield', 'northglenn', 'wheat ridge', 'commerce city', 'englewood', 'greenwood village', 'littleton', 'glendale', 'cherry hills village'),
+			
+			// Washington DC Metro Area
+			'washington dc' => array('arlington', 'alexandria', 'fairfax', 'falls church', 'springfield', 'annandale', 'vienna', 'mclean', 'great falls', 'reston', 'herndon', 'sterling', 'leesburg', 'ashburn', 'dulles', 'chantilly', 'centreville', 'manassas', 'woodbridge', 'stafford', 'fredericksburg', 'bethesda', 'rockville', 'gaithersburg', 'germantown', 'silver spring', 'wheaton', 'takoma park', 'college park', 'hyattsville', 'laurel', 'bowie', 'greenbelt'),
+			'washington' => array('arlington', 'alexandria', 'fairfax', 'falls church', 'springfield', 'annandale', 'vienna', 'mclean', 'great falls', 'reston', 'herndon', 'sterling', 'leesburg', 'ashburn', 'dulles', 'chantilly', 'centreville', 'manassas', 'woodbridge', 'stafford', 'fredericksburg', 'bethesda', 'rockville', 'gaithersburg', 'germantown', 'silver spring', 'wheaton', 'takoma park', 'college park', 'hyattsville', 'laurel', 'bowie', 'greenbelt'),
+			
+			// Boston Metro Area
+			'boston ma' => array('worcester', 'springfield', 'lowell', 'cambridge', 'newton', 'brookline', 'quincy', 'lynn', 'newton', 'somerville', 'framingham', 'waltham', 'malden', 'brookline', 'medford', 'taunton', 'chicopee', 'weymouth', 'revere', 'peabody', 'methuen', 'barnstable', 'pittsfield', 'attleboro', 'everett', 'salem', 'beverly', 'gloucester', 'newburyport'),
+			'boston' => array('worcester', 'springfield', 'lowell', 'cambridge', 'newton', 'brookline', 'quincy', 'lynn', 'newton', 'somerville', 'framingham', 'waltham', 'malden', 'brookline', 'medford', 'taunton', 'chicopee', 'weymouth', 'revere', 'peabody', 'methuen', 'barnstable', 'pittsfield', 'attleboro', 'everett', 'salem', 'beverly', 'gloucester', 'newburyport'),
+			
+			// Atlanta Metro Area
+			'atlanta ga' => array('augusta', 'columbus', 'savannah', 'athens', 'sandy springs', 'roswell', 'macon', 'johns creek', 'albany', 'warner robins', 'alpharetta', 'valdosta', 'smyrna', 'dunwoody', 'rome', 'east point', 'peachtree corners', 'lawrenceville', 'marietta', 'kennesaw', 'duluth', 'chamblee', 'stockbridge', 'griffin', 'carrollton', 'sugar hill', 'tucker', 'south fulton', 'fayetteville', 'peachtree city'),
+			'atlanta' => array('augusta', 'columbus', 'savannah', 'athens', 'sandy springs', 'roswell', 'macon', 'johns creek', 'albany', 'warner robins', 'alpharetta', 'valdosta', 'smyrna', 'dunwoody', 'rome', 'east point', 'peachtree corners', 'lawrenceville', 'marietta', 'kennesaw', 'duluth', 'chamblee', 'stockbridge', 'griffin', 'carrollton', 'sugar hill', 'tucker', 'south fulton', 'fayetteville', 'peachtree city'),
+			
+			// Miami Metro Area
+			'miami fl' => array('hialeah', 'fort lauderdale', 'port st. lucie', 'cape coral', 'tallahassee', 'pembroke pines', 'hollywood', 'miramar', 'coral springs', 'miami gardens', 'sunrise', 'plantation', 'davie', 'boca raton', 'deltona', 'palm bay', 'west palm beach', 'clearwater', 'pompano beach', 'lauderhill', 'tamarac', 'weston', 'coconut creek', 'boynton beach', 'deerfield beach', 'delray beach', 'jupiter', 'broward county', 'dade county'),
+			'miami' => array('hialeah', 'fort lauderdale', 'port st. lucie', 'cape coral', 'tallahassee', 'pembroke pines', 'hollywood', 'miramar', 'coral springs', 'miami gardens', 'sunrise', 'plantation', 'davie', 'boca raton', 'deltona', 'palm bay', 'west palm beach', 'clearwater', 'pompano beach', 'lauderhill', 'tamarac', 'weston', 'coconut creek', 'boynton beach', 'deerfield beach', 'delray beach', 'jupiter', 'broward county', 'dade county'),
+			
+			// Detroit Metro Area
+			'detroit mi' => array('grand rapids', 'warren', 'sterling heights', 'lansing', 'ann arbor', 'flint', 'dearborn', 'livonia', 'westland', 'troy', 'farmington hills', 'kalamazoo', 'wyoming', 'southfield', 'rochester hills', 'taylor', 'pontiac', 'st. clair shores', 'royal oak', 'novi', 'dearborn heights', 'saginaw', 'muskegon', 'battle creek', 'bay city', 'jackson', 'midland', 'portage', 'east lansing'),
+			'detroit' => array('grand rapids', 'warren', 'sterling heights', 'lansing', 'ann arbor', 'flint', 'dearborn', 'livonia', 'westland', 'troy', 'farmington hills', 'kalamazoo', 'wyoming', 'southfield', 'rochester hills', 'taylor', 'pontiac', 'st. clair shores', 'royal oak', 'novi', 'dearborn heights', 'saginaw', 'muskegon', 'battle creek', 'bay city', 'jackson', 'midland', 'portage', 'east lansing'),
+			
+			// Minneapolis-St. Paul Metro Area
+			'minneapolis mn' => array('st. paul', 'rochester', 'duluth', 'bloomington', 'brooklyn park', 'plymouth', 'st. cloud', 'eagan', 'woodbury', 'maple grove', 'eden prairie', 'minnetonka', 'burnsville', 'lakeville', 'apple valley', 'eagan', 'west st. paul', 'south st. paul', 'inver grove heights', 'mendota heights', 'richfield', 'edina', 'hopkins', 'golden valley', 'new hope', 'crystal', 'robbinsdale', 'new brighton', 'roseville', 'falcon heights', 'lauderdale', 'st. anthony'),
+			'minneapolis' => array('st. paul', 'rochester', 'duluth', 'bloomington', 'brooklyn park', 'plymouth', 'st. cloud', 'eagan', 'woodbury', 'maple grove', 'eden prairie', 'minnetonka', 'burnsville', 'lakeville', 'apple valley', 'eagan', 'west st. paul', 'south st. paul', 'inver grove heights', 'mendota heights', 'richfield', 'edina', 'hopkins', 'golden valley', 'new hope', 'crystal', 'robbinsdale', 'new brighton', 'roseville', 'falcon heights', 'lauderdale', 'st. anthony'),
+			
+			// Philadelphia Metro Area
+			'philadelphia pa' => array('pittsburgh', 'allentown', 'erie', 'reading', 'scranton', 'bethlehem', 'lancaster', 'harrisburg', 'altoona', 'york', 'state college', 'chester', 'upper darby', 'bristol', 'norristown', 'abington', 'bensalem', 'bucks county', 'montgomery county', 'delaware county', 'chester county'),
+			'philadelphia' => array('pittsburgh', 'allentown', 'erie', 'reading', 'scranton', 'bethlehem', 'lancaster', 'harrisburg', 'altoona', 'york', 'state college', 'chester', 'upper darby', 'bristol', 'norristown', 'abington', 'bensalem', 'bucks county', 'montgomery county', 'delaware county', 'chester county'),
+			
+			// Las Vegas Metro Area
+			'las vegas nv' => array('henderson', 'north las vegas', 'reno', 'sparks', 'carson city', 'mesquite', 'boulder city', 'pahrump', 'elko', 'fernley', 'west wendover', 'ely', 'winnemucca', 'fallon', 'lovelock', 'tonopah', 'caliente', 'yerington', 'hawthorne', 'laughlin'),
+			'las vegas' => array('henderson', 'north las vegas', 'reno', 'sparks', 'carson city', 'mesquite', 'boulder city', 'pahrump', 'elko', 'fernley', 'west wendover', 'ely', 'winnemucca', 'fallon', 'lovelock', 'tonopah', 'caliente', 'yerington', 'hawthorne', 'laughlin'),
+			
+			// Portland Metro Area
+			'portland or' => array('salem', 'eugene', 'gresham', 'hillsboro', 'bend', 'medford', 'springfield', 'corvallis', 'albany', 'tigard', 'lake oswego', 'keizer', 'oregon city', 'beaverton', 'tualatin', 'west linn', 'milwaukie', 'clackamas', 'happy valley', 'gladstone', 'troutdale', 'fairview', 'wood village', 'damascus', 'sandy', 'estacada', 'canby', 'molalla', 'wilsonville', 'sherwood', 'forest grove', 'cornelius', 'hillsboro'),
+			'portland' => array('salem', 'eugene', 'gresham', 'hillsboro', 'bend', 'medford', 'springfield', 'corvallis', 'albany', 'tigard', 'lake oswego', 'keizer', 'oregon city', 'beaverton', 'tualatin', 'west linn', 'milwaukie', 'clackamas', 'happy valley', 'gladstone', 'troutdale', 'fairview', 'wood village', 'damascus', 'sandy', 'estacada', 'canby', 'molalla', 'wilsonville', 'sherwood', 'forest grove', 'cornelius', 'hillsboro'),
+			
+			// Milwaukee Metro Area
+			'milwaukee wi' => array('madison', 'green bay', 'kenosha', 'racine', 'appleton', 'oshkosh', 'eau claire', 'janesville', 'west allis', 'la crosse', 'sheboygan', 'waukesha', 'oshkosh', 'fond du lac', 'brookfield', 'new berlin', 'wauwatosa', 'muskego', 'menomonee falls', 'franklin', 'oak creek', 'south milwaukee', 'st. francis', 'cudahy', 'shorewood', 'whitefish bay', 'glendale', 'brown deer', 'river hills', 'bayside', 'fox point'),
+			'milwaukee' => array('madison', 'green bay', 'kenosha', 'racine', 'appleton', 'oshkosh', 'eau claire', 'janesville', 'west allis', 'la crosse', 'sheboygan', 'waukesha', 'oshkosh', 'fond du lac', 'brookfield', 'new berlin', 'wauwatosa', 'muskego', 'menomonee falls', 'franklin', 'oak creek', 'south milwaukee', 'st. francis', 'cudahy', 'shorewood', 'whitefish bay', 'glendale', 'brown deer', 'river hills', 'bayside', 'fox point')
+		);
+		
+		// Normalize the input location
+		$normalizedLocation = strtolower(trim($selectedLocation));
+		
+		// Check if the location exists in our metro area mappings
+		if (isset($metroAreas[$normalizedLocation])) {
+			return $metroAreas[$normalizedLocation];
+		}
+		
+		// If no metro area found, return empty array (will use exact match only)
+		return array();
 	}
 }

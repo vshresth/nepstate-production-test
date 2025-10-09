@@ -52,7 +52,7 @@
 
 
         $(".swiper-container2").each(function () {
-            var slider = new Swiper ('.slider-content', {
+            var swiper = new Swiper ('.slider-content', {
                 slidesPerView: 1,
                 centeredSlides: true,
                 // loop: true,
@@ -66,7 +66,7 @@
                     prevEl: '.swiper-button-prev',
                 },
             });
-            slider.init();
+            swiper.init();
         });
 
         $(".swiper-container3").each(function () {

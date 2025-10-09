@@ -40,8 +40,10 @@ include("common/header.php");
    // echo "</pre>";
    
    ?>
-<link rel="stylesheet" href="<?php echo $uploads;?>elementor/css/post-1731.css?ver=<?php echo time();?>" media="all">
-<link rel="stylesheet" href="<?php echo $uploads;?>elementor/css/post-2827.css?time=<?php echo time();?>" media="all">
+<!-- Missing CSS file - commented out to prevent 404 errors -->
+<!-- <link rel="stylesheet" href="<?php echo $uploads;?>elementor/css/post-1731.css?ver=<?php echo time();?>" media="all"> -->
+<!-- Missing CSS file - commented out to prevent 404 errors -->
+<!-- <link rel="stylesheet" href="<?php echo $uploads;?>elementor/css/post-2827.css?time=<?php echo time();?>" media="all"> -->
 <div data-elementor-type="wp-page" data-elementor-id="7919" class="elementor elementor-7919">
    <!-- SILVER GOLD -->
    <div class="container">

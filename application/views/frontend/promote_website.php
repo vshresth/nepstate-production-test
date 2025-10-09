@@ -22,7 +22,15 @@
                            <div class="panel panel-default">
                                 <div class="panel-body" style="padding:20px; border-radius: 10px;">
                                     <?php 
-                                        $plans_listing = $this->db->query("SELECT * FROM payment_plans WHERE status = 1 ORDER BY id ASC")->result_object();
+                                        // Force fresh query with cache busting
+                                        $plans_listing = $this->db->query("SELECT * FROM payment_plans WHERE status = 1 ORDER BY sort_order ASC, id ASC")->result_object();
+                                        
+                                        // Debug: Show the order in HTML comments (remove visible debug box)
+                                        echo "<!-- Payment Plans Order Debug: ";
+                                        foreach($plans_listing as $debug_plan) {
+                                            echo "ID: " . $debug_plan->id . " | Title: " . $debug_plan->title . " | Sort Order: " . ($debug_plan->sort_order ?? 'NULL') . " | ";
+                                        }
+                                        echo " -->";
                                         $row = $this->db->query("SELECT * FROM payment_plans WHERE status = 1 ORDER BY id DESC LIMIT 1")->result_object()[0];
                                         $cat_final_title = "Category";
                                     ?>

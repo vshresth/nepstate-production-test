@@ -100,7 +100,7 @@
 </div>
   
   <!-- Input field for city name or ZIP code -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXLSGnMNN051ESCBh-mKv__W_m-tbkFlg&libraries=places"></script>
+  <!-- Google Maps API loaded in footer.php -->
 
   <!-- Script to initialize Google Maps autocomplete -->
   <script>
