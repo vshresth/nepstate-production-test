@@ -129,10 +129,10 @@ if(!isset($_SESSION['LISTYLOGIN'])){
                                  <a rel="category tag">NSB#
                                     <?php $segment =  $this->uri->segment(2); ?>
                                     <?php
-                                     if($segment == null) {
+                                     if($segment == null || !is_numeric($segment)) {
                                         echo $key + 1;
                                     }else{
-                                       echo $segment + $key + 1;
+                                       echo (int)$segment + $key + 1;
                                     } 
                                     ?></a>            
                            </div>
@@ -265,4 +265,25 @@ echo (strlen($tags_strip) > 200) ? substr($tags_strip, 0, 200) . "..." : $tags_s
          window.location.href = '<?php echo base_url();?>blog';
       }
     }
+
+    // Auto-scroll to blog content on page load (skip the banner ad at top)
+    jQuery(document).ready(function() {
+        // Wait for page to fully load before scrolling
+        setTimeout(function() {
+            var blogSection = jQuery('.blog-posts-layout');
+            if (blogSection.length) {
+                // Get the position of the blog content section
+                var targetPosition = blogSection.offset().top - 100; // 100px offset for better visibility
+                
+                // Smooth scroll to the blog content
+                jQuery('html, body').animate({
+                    scrollTop: targetPosition
+                }, 1000); // 1 second smooth scroll duration
+                
+                console.log('Auto-scrolling to blog listing at position:', targetPosition);
+            } else {
+                console.log('Blog listing section not found for auto-scroll');
+            }
+        }, 500); // Wait 500ms for page to settle
+    });
 </script>

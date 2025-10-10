@@ -504,13 +504,23 @@ if($this->uri->segment(1)=="blog"){
 <script>
 // Auto-scroll to blog content on page load (skip the banner ad at top)
 jQuery(document).ready(function() {
-    // Scroll to the main blog content section smoothly
-    var blogSection = jQuery('.blog-details-page');
-    if (blogSection.length) {
-        jQuery('html, body').animate({
-            scrollTop: blogSection.offset().top - 80 // 80px offset for fixed header if any
-        }, 800); // 800ms smooth scroll duration
-    }
+    // Wait for page to fully load before scrolling
+    setTimeout(function() {
+        var blogSection = jQuery('.blog-details-page');
+        if (blogSection.length) {
+            // Get the position of the blog content section
+            var targetPosition = blogSection.offset().top - 100; // 100px offset for better visibility
+            
+            // Smooth scroll to the blog content
+            jQuery('html, body').animate({
+                scrollTop: targetPosition
+            }, 1000); // 1 second smooth scroll duration
+            
+            console.log('Auto-scrolling to blog content at position:', targetPosition);
+        } else {
+            console.log('Blog section not found for auto-scroll');
+        }
+    }, 500); // Wait 500ms for page to settle
 });
 
 function  do_show_share(val) {

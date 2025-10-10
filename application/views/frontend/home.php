@@ -12,6 +12,28 @@ include("common/header.php");
    }
    .advetise_button {
    }
+   
+   /* Keep only essential fixes: uniform box size and full titles */
+   .listing-slider-shortcode .swiper-slide .blog-box-layout1 {
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100% !important;
+   }
+   
+   .listing-slider-shortcode .swiper-slide .blog-box-layout1 .post-thumb {
+      flex-shrink: 0;
+   }
+   
+   .listing-slider-shortcode .swiper-slide .blog-box-layout1 .post-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+   }
+   
+   .listing-slider-shortcode .swiper-slide .blog-box-layout1 .entry-meta {
+      margin-top: auto;
+   }
 </style>
 <div data-elementor-type="wp-page" data-elementor-id="10" class="elementor elementor-10">
    <?php include("common/header_full.php"); ?>
@@ -172,65 +194,68 @@ include("common/header.php");
                </div>
                <div class="elementor-element elementor-element-7ade98e elementor-widget elementor-widget-rt-post" data-id="7ade98e" data-element_type="widget" data-widget_type="rt-post.default">
                   <div class="elementor-widget-container">
-                     <div class="row row-cols-lg-3 row-cols-sm-2 row-cols-1  elementor-addon justify-content-center">
-                        <?php 
-                           $listOfBlogs = $this->db->query("SELECT * FROM blogs WHERE status = 1 AND is_approved = 1 ".$blog_forum_confession_condition_query. " ORDER BY id DESC limit 3")->result_object();
-                           
-                           
-                           foreach($listOfBlogs as $blog) {
-                           		
-                           $datetime = new DateTime($blog->created_at);
-                           $date = $datetime->format('jS F Y');
-                           $title = $blog->title;
-                           $description = $blog->description;
-                           $image = $blog->image;
-                           $author = $blog->author;
-                           
-                           $blogCommentCount = $this->db->where('bID', $blog->id)->get('blog_comment')->num_rows();
-                           
-                           ?>
-                        <div class="col">
-                           <article style="" id="post-3732" class="blog-box-layout1 v3  post-3732 post type-post status-publish format-standard has-post-thumbnail hentry category-travel tag-cafe tag-travel have-post-thumb">
-                              <div class="post-thumb">
-                                 <a href="<?php echo base_url();?>blog/details/<?php echo $blog->slug;?>"><img style="height:250px;"  src="<?php echo $image;?>" class="attachment-rtcl-gallery size-rtcl-gallery wp-post-image" alt="" decoding="async" title=""></a>
-                                 <div class="blog-block__date">
-                                    <?php echo $date; ?>                   
-                                 </div>
-                              </div>
-                              <div class="post-content">
-                                 <h3 class="post-title"><a href="<?php echo base_url();?>blog/details/<?php echo $blog->slug;?>">
+                     <div class="listing-box-wrap listing-shortcode listing-slider-shortcode">
+                        <div class="swiper-custom swiper">
+                           <div class="swiper-wrapper" data-carousel-options="{&quot;col_xl&quot;:&quot;3&quot;,&quot;autoplay&quot;:false,&quot;speed&quot;:&quot;2000&quot;,&quot;col_lg&quot;:&quot;3&quot;,&quot;col_md&quot;:&quot;2&quot;,&quot;col_sm&quot;:&quot;2&quot;,&quot;col_xs&quot;:&quot;1&quot;}">
+                              <?php 
+                                 $listOfBlogs = $this->db->query("SELECT * FROM blogs WHERE status = 1 AND is_approved = 1 ".$blog_forum_confession_condition_query. " ORDER BY id DESC limit 9")->result_object();
+                                 
+                                 foreach($listOfBlogs as $blog) {
+                                    $datetime = new DateTime($blog->created_at);
+                                    $date = $datetime->format('jS F Y');
+                                    $title = $blog->title;
+                                    $description = $blog->description;
+                                    $image = $blog->image;
+                                    $author = $blog->author;
                                     
-                                 <?php 
-                                          echo (strlen($title) > 25) ? substr($title, 0, 25) . "..." : $title;
-                                 ?>
-                                 </a></h3>
-                                 <div class="content">
-                                    <p></p>
-                                 </div>
-                                 <ul class="entry-meta">
-                                    <li class="entry-admin">
-                                       <svg width="24" height="24" viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M16.3125 9.375C16.3125 6.99375 14.3813 5.0625 12 5.0625C9.61875 5.0625 7.6875 6.99375 7.6875 9.375C7.6875 11.7563 9.61875 13.6875 12 13.6875C14.3813 13.6875 16.3125 11.7563 16.3125 9.375ZM8.8125 9.375C8.8125 7.6125 10.2375 6.1875 12 6.1875C13.7625 6.1875 15.1875 7.6125 15.1875 9.375C15.1875 11.1375 13.7625 12.5625 12 12.5625C10.2375 12.5625 8.8125 11.1375 8.8125 9.375Z" fill="#797979"></path>
-                                          <path d="M4.78125 20.2875C4.875 20.3438 4.96875 20.3625 5.0625 20.3625C5.25 20.3625 5.45625 20.2688 5.55 20.0813C6.8625 17.7563 9.3375 16.3125 12 16.3125C14.6625 16.3125 17.1375 17.7563 18.4688 20.0813C18.6188 20.3438 18.975 20.4375 19.2375 20.2875C19.5 20.1375 19.5938 19.7813 19.4438 19.5188C17.925 16.8563 15.075 15.1875 12 15.1875C8.925 15.1875 6.075 16.8563 4.55625 19.5188C4.40625 19.7813 4.5 20.1375 4.78125 20.2875Z" fill="#797979"></path>
-                                       </svg>
-                                       <span>
-                                       <span>by</span> 
-                                       <a href="<?php echo base_url();?>blog/details/<?php echo $blog->slug;?>"><?php echo $author; ?></a>
-                                       </span>
-                                    </li>
-                                    <li class="entry-admin">
-                                       <span class="meta-icon">
-                                          <svg width="22" height="20" viewbox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                             <path d="M0.5 0.75V12.75H3.5V16.5705L4.71875 15.5858L8.258 12.75H15.5V0.75H0.5ZM2 2.25H14V11.25H7.742L7.53125 11.4142L5 13.4295V11.25H2V2.25ZM17 3.75V5.25H20V14.25H17V16.4295L14.258 14.25H8.633L6.758 15.75H13.742L18.5 19.5705V15.75H21.5V3.75H17Z" fill="#797979"></path>
-                                          </svg>
-                                       </span>
-                                       <?php echo $blogCommentCount;?>                 
-                                    </li>
-                                 </ul>
+                                    $blogCommentCount = $this->db->where('bID', $blog->id)->get('blog_comment')->num_rows();
+                                    
+                                    ?>
+                              <div class="swiper-slide">
+                                 <article style="" id="post-3732" class="blog-box-layout1 v3  post-3732 post type-post status-publish format-standard has-post-thumbnail hentry category-travel tag-cafe tag-travel have-post-thumb">
+                                    <div class="post-thumb">
+                                       <a href="<?php echo base_url();?>blog/details/<?php echo $blog->slug;?>"><img style="height:250px;"  src="<?php echo $image;?>" class="attachment-rtcl-gallery size-rtcl-gallery wp-post-image" alt="" decoding="async" title=""></a>
+                                       <div class="blog-block__date">
+                                          <?php echo $date; ?>                   
+                                       </div>
+                                    </div>
+                                    <div class="post-content">
+                                       <h3 class="post-title"><a href="<?php echo base_url();?>blog/details/<?php echo $blog->slug;?>">
+                                          
+                                          <?php 
+                                                   echo $title; // Show full title without truncation
+                                          ?>
+                                          </a></h3>
+                                       <div class="content">
+                                          <p></p>
+                                       </div>
+                                       <ul class="entry-meta">
+                                          <li class="entry-admin">
+                                             <svg width="24" height="24" viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M16.3125 9.375C16.3125 6.99375 14.3813 5.0625 12 5.0625C9.61875 5.0625 7.6875 6.99375 7.6875 9.375C7.6875 11.7563 9.61875 13.6875 12 13.6875C14.3813 13.6875 16.3125 11.7563 16.3125 9.375ZM8.8125 9.375C8.8125 7.6125 10.2375 6.1875 12 6.1875C13.7625 6.1875 15.1875 7.6125 15.1875 9.375C15.1875 11.1375 13.7625 12.5625 12 12.5625C10.2375 12.5625 8.8125 11.1375 8.8125 9.375Z" fill="#797979"></path>
+                                                <path d="M4.78125 20.2875C4.875 20.3438 4.96875 20.3625 5.0625 20.3625C5.25 20.3625 5.45625 20.2688 5.55 20.0813C6.8625 17.7563 9.3375 16.3125 12 16.3125C14.6625 16.3125 17.1375 17.7563 18.4688 20.0813C18.6188 20.3438 18.975 20.4375 19.2375 20.2875C19.5 20.1375 19.5938 19.7813 19.4438 19.5188C17.925 16.8563 15.075 15.1875 12 15.1875C8.925 15.1875 6.075 16.8563 4.55625 19.5188C4.40625 19.7813 4.5 20.1375 4.78125 20.2875Z" fill="#797979"></path>
+                                             </svg>
+                                             <span>
+                                             <span>by</span> 
+                                             <a href="<?php echo base_url();?>blog/details/<?php echo $blog->slug;?>"><?php echo $author; ?></a>
+                                             </span>
+                                          </li>
+                                          <li class="entry-admin">
+                                             <span class="meta-icon">
+                                                <svg width="22" height="20" viewbox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                   <path d="M0.5 0.75V12.75H3.5V16.5705L4.71875 15.5858L8.258 12.75H15.5V0.75H0.5ZM2 2.25H14V11.25H7.742L7.53125 11.4142L5 13.4295V11.25H2V2.25ZM17 3.75V5.25H20V14.25H17V16.4295L14.258 14.25H8.633L6.758 15.75H13.742L18.5 19.5705V15.75H21.5V3.75H17Z" fill="#797979"></path>
+                                                </svg>
+                                             </span>
+                                             <?php echo $blogCommentCount;?>                 
+                                          </li>
+                                       </ul>
+                                    </div>
+                                 </article>
                               </div>
-                           </article>
+                              <?php }?>
+                           </div>
+                           <div class="swiper-pagination"></div>
                         </div>
-                        <?php }?>
                      </div>
                   </div>
                </div>
