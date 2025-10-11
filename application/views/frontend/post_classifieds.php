@@ -388,18 +388,58 @@ document.getElementById('couponCancelBtn').addEventListener('click', (event) =>{
 <script> 
     tinymce.init({
       selector: 'textarea',
-      height: 350,
-      menubar: false,
+      height: 400,
+      menubar: true,
       plugins: [
-        'advlist autolink lists link image charmap print preview anchor',
-        'searchreplace visualblocks code fullscreen',
-        'insertdatetime media table paste code help wordcount'
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'help', 'wordcount', 'emoticons',
+        'textcolor', 'colorpicker', 'textpattern', 'nonbreaking', 'pagebreak',
+        'save', 'directionality', 'paste', 'importcss', 'template'
       ],
-      toolbar: 'undo redo | formatselect | ' +
-      'bold italic backcolor | alignleft aligncenter ' +
-      'alignright alignjustify | bullist numlist outdent indent | ' +
-      'removeformat | help',
-      content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:12px }'
+      toolbar: 'undo redo | blocks | ' +
+        'bold italic underline strikethrough | alignleft aligncenter ' +
+        'alignright alignjustify | outdent indent |  numlist bullist | ' +
+        'forecolor backcolor removeformat | pagebreak | charmap emoticons | ' +
+        'fullscreen preview save print | insertfile image media template link anchor codesample | ' +
+        'ltr rtl | help',
+      toolbar_mode: 'sliding',
+      contextmenu: 'link image imagetools table spellchecker configurepermanentpen',
+      menubar: 'file edit view insert format tools table help',
+      content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px; line-height:1.6; }',
+      branding: false,
+      resize: true,
+      statusbar: true,
+      elementpath: true,
+      convert_urls: false,
+      relative_urls: false,
+      remove_script_host: false,
+      document_base_url: '<?php echo base_url(); ?>',
+      paste_data_images: true,
+      file_picker_types: 'image',
+      file_picker_callback: function (cb, value, meta) {
+        var input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        
+        input.onchange = function () {
+          var file = this.files[0];
+          
+          var reader = new FileReader();
+          reader.onload = function () {
+            var id = 'blobid' + (new Date()).getTime();
+            var blobCache = tinymce.activeEditor.editorUpload.blobCache;
+            var base64 = reader.result.split(',')[1];
+            var blobInfo = blobCache.create(id, file, base64);
+            blobCache.add(blobInfo);
+            
+            cb(blobInfo.blobUri(), { title: file.name });
+          };
+          reader.readAsDataURL(file);
+        };
+        
+        input.click();
+      }
     });
 </script>
 

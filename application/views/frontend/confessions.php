@@ -117,11 +117,7 @@ if(!isset($_SESSION['LISTYLOGIN'])){
    ?>
 <div class="col">
 <article id="post-3728" class="blog-box-layout1 blog-list  post-3728 post type-post status-publish format-standard has-post-thumbnail hentry category-shopping-mall tag-cafe tag-travel have-post-thumb">
-    <?php if(isset($_GET['view']) && $_GET['view'] != ""){?>
-        <div class="post-thumb">
-        <a href="#"><img width="860" height="460" src="<?php echo $uploads;?>2022/08/shopping-4-min.jpg" class="attachment-post-thumbnail size-post-thumbnail wp-post-image" alt="" decoding="async" srcset="<?php echo $uploads;?>2022/08/shopping-4-min.jpg 860w, <?php echo $uploads;?>2022/08/shopping-4-min-350x187.jpg 350w" sizes="(max-width: 860px) 100vw, 860px" title=""></a>
-            </div>
-        <?php } ?>
+    <?php // Confessions should never show images - removed conditional view check ?>
         <div class="post-content">
             <div class="" onclick="<?php if($blog->nsfw ==1){?>show_nsfw_content('<?php echo base_url();?>confession/details/<?php echo $blog->slug;?>');<?php } else { ?>window.location.href='<?php echo base_url();?>confession/details/<?php echo $blog->slug;?>' <?php } ?>" style="cursor: pointer;">
               <ul class="entry-meta conf_" style="display: flex; align-items: center;"> 

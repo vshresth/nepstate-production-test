@@ -358,4 +358,25 @@ if(!isset($_SESSION['LISTYLOGIN'])){
         jQuery("#confession_nsfw").show();
         jQuery(".id_btn_nsfw").attr("href", url);
     }
+
+    // Auto-scroll to forum content on page load (skip the banner ad at top)
+    jQuery(document).ready(function() {
+        // Wait for page to fully load before scrolling
+        setTimeout(function() {
+            var forumSection = jQuery('.blog-posts-layout');
+            if (forumSection.length) {
+                // Get the position of the forum content section
+                var targetPosition = forumSection.offset().top - 100; // 100px offset for better visibility
+                
+                // Smooth scroll to the forum content
+                jQuery('html, body').animate({
+                    scrollTop: targetPosition
+                }, 1000); // 1 second smooth scroll duration
+                
+                console.log('Auto-scrolling to forum content at position:', targetPosition);
+            } else {
+                console.log('Forum section not found for auto-scroll');
+            }
+        }, 500); // Wait 500ms for page to settle
+    });
 </script>

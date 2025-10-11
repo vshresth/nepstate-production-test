@@ -60,9 +60,6 @@
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
-                            <script>
-                                CKEDITOR.replace('description');
-                            </script>
                         </div>
                         <br>
                         <div class="col-md-6">
