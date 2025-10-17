@@ -20,6 +20,19 @@ class Nepstate extends ADMIN_Controller {
         $this->load->database();
         $this->db->reconnect();
         
+        // Check if user wants to clear location filter
+        if (isset($_GET['clear_location']) && $_GET['clear_location'] == '1') {
+            // Delete location cookies
+            setcookie('user_city_id', '', time() - 3600, '/');
+            setcookie('user_country_id', '', time() - 3600, '/');
+            unset($_COOKIE['user_city_id']);
+            unset($_COOKIE['user_country_id']);
+            
+            // Redirect to clean homepage without the parameter
+            redirect(base_url());
+            exit;
+        }
+        
         // IP-based country auto-detection - RUN IMMEDIATELY
         $this->handleIPCountryDetection();
         
@@ -62,25 +75,161 @@ class Nepstate extends ADMIN_Controller {
 
 		if(isset($_COOKIE['user_country_id']) && isset($_COOKIE['user_city_id'])) {
 			
-			// $this->data['country_city_ConditionQuery'] = ' AND country_id = '.userCountryId().' AND (city_id = \'' . userCityId() . '\' OR city_id IS NULL)';
-			$this->data['country_city_ConditionQuery'] = ' AND country_id = ' . userCountryId() . ' AND city_id = \'' . userCityId().'\'';
-
-			// Get metro area cities for the selected location
-			$metroCities = $this->getMetroAreaCities(userCityId());
+			$userCity = userCityId();
 			
-			if (!empty($metroCities)) {
-				$metroCityConditions = array();
-				foreach ($metroCities as $city) {
-					$metroCityConditions[] = "LOWER(city) = '".strtolower($city)."'";
-					$metroCityConditions[] = "LOWER(state) = '".strtolower($city)."'";
+			// CLEAN LOCATION SEARCH - Simple and effective with Metro Area support
+			$cityConditions = array();
+			
+			// Load metro areas configuration
+			require_once APPPATH . 'config/metro_areas.php';
+			
+			// State mapping for abbreviations
+			$stateMapping = array(
+				'alabama' => 'al', 'alaska' => 'ak', 'arizona' => 'az', 'arkansas' => 'ar', 'california' => 'ca',
+				'colorado' => 'co', 'connecticut' => 'ct', 'delaware' => 'de', 'florida' => 'fl', 'georgia' => 'ga',
+				'hawaii' => 'hi', 'idaho' => 'id', 'illinois' => 'il', 'indiana' => 'in', 'iowa' => 'ia',
+				'kansas' => 'ks', 'kentucky' => 'ky', 'louisiana' => 'la', 'maine' => 'me', 'maryland' => 'md',
+				'massachusetts' => 'ma', 'michigan' => 'mi', 'minnesota' => 'mn', 'mississippi' => 'ms', 'missouri' => 'mo',
+				'montana' => 'mt', 'nebraska' => 'ne', 'nevada' => 'nv', 'new hampshire' => 'nh', 'new jersey' => 'nj',
+				'new mexico' => 'nm', 'new york' => 'ny', 'north carolina' => 'nc', 'north dakota' => 'nd', 'ohio' => 'oh',
+				'oklahoma' => 'ok', 'oregon' => 'or', 'pennsylvania' => 'pa', 'rhode island' => 'ri', 'south carolina' => 'sc',
+				'south dakota' => 'sd', 'tennessee' => 'tn', 'texas' => 'tx', 'utah' => 'ut', 'vermont' => 'vt',
+				'virginia' => 'va', 'washington' => 'wa', 'west virginia' => 'wv', 'wisconsin' => 'wi', 'wyoming' => 'wy'
+			);
+			
+			// Check if it's a "City, State" format
+			if (strpos($userCity, ',') !== false) {
+				$parts = explode(',', $userCity);
+				$searchCity = trim($parts[0]);
+				$searchState = trim($parts[1]);
+				$stateAbbrev = isset($stateMapping[strtolower($searchState)]) ? $stateMapping[strtolower($searchState)] : '';
+				
+				// Check if user wants exact location only
+				$exactLocationOnly = isset($_GET['exact_location']) && $_GET['exact_location'] == '1';
+				
+				if ($exactLocationOnly) {
+					// EXACT MATCHING ONLY - No metro area expansion
+					$cityConditions[] = "(city_id IS NOT NULL AND city_id = '" . $this->db->escape_str($userCity) . "')";
+					$cityConditions[] = "(LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($searchCity) . "')) AND LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($searchState) . "')))";
+					if (!empty($stateAbbrev)) {
+						$cityConditions[] = "(LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($searchCity) . "')) AND LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($stateAbbrev) . "')))";
+					}
+					$cityConditions[] = "(LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.city'))) = LOWER('" . $this->db->escape_str($searchCity) . "') AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.state'))) = LOWER('" . $this->db->escape_str($searchState) . "'))";
+					if (!empty($stateAbbrev)) {
+						$cityConditions[] = "(LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.city'))) = LOWER('" . $this->db->escape_str($searchCity) . "') AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.state'))) = LOWER('" . $this->db->escape_str($stateAbbrev) . "'))";
+					}
+				} else {
+					// METRO AREA SEARCH - Include nearby cities
+					
+					// 1. Exact city_id match (only if not NULL)
+					$cityConditions[] = "(city_id IS NOT NULL AND city_id = '" . $this->db->escape_str($userCity) . "')";
+					
+					// 2. Check if this city is part of a metro area
+					$metroArea = findMetroAreaByCity($searchCity, $searchState);
+					
+					if ($metroArea !== false) {
+						// This city is part of a metro area - include all metro cities
+						$metroCities = getMetroAreaCities($metroArea['key']);
+						
+						// Add conditions for all cities in the metro area
+						foreach ($metroCities as $metroCity) {
+							// Database field matching with state validation
+							$cityConditions[] = "(LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($metroCity) . "')) AND (LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($searchState) . "')) OR LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($stateAbbrev) . "'))))";
+							
+							// JSON field matching with state validation
+							$cityConditions[] = "(LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.city'))) = LOWER('" . $this->db->escape_str($metroCity) . "') AND (LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.state'))) = LOWER('" . $this->db->escape_str($searchState) . "') OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.state'))) = LOWER('" . $this->db->escape_str($stateAbbrev) . "')))";
+							
+							// JSON address field matching with state validation (more strict)
+							$cityConditions[] = "(LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.address'))) LIKE '%" . $this->db->escape_like_str(strtolower($metroCity)) . "%' AND (LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.address'))) LIKE '%" . $this->db->escape_like_str(strtolower($searchState)) . "%' OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.address'))) LIKE '%" . $this->db->escape_like_str(strtolower($stateAbbrev)) . "%'))";
+						}
+						
+						// Store metro area info for display
+						$this->data['metro_area_info'] = array(
+							'key' => $metroArea['key'],
+							'main_city' => $metroArea['data']['main_city'],
+							'search_city' => $searchCity,
+							'all_cities' => $metroCities,
+							'nearby_count' => count($metroCities) - 1 // Exclude the searched city itself
+						);
+					} else {
+						// Not a metro area - use standard city+state matching
+						$cityConditions[] = "(LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($searchCity) . "')) AND LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($searchState) . "')))";
+						if (!empty($stateAbbrev)) {
+							$cityConditions[] = "(LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($searchCity) . "')) AND LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($stateAbbrev) . "')))";
+						}
+						$cityConditions[] = "(LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.city'))) = LOWER('" . $this->db->escape_str($searchCity) . "') AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.state'))) = LOWER('" . $this->db->escape_str($searchState) . "'))";
+						if (!empty($stateAbbrev)) {
+							$cityConditions[] = "(LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.city'))) = LOWER('" . $this->db->escape_str($searchCity) . "') AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.state'))) = LOWER('" . $this->db->escape_str($stateAbbrev) . "'))";
+						}
+					}
 				}
-				$queryCity = "( city_id = '".userCityId()."' OR LOWER(city) = '".strtolower(userCityId())."'  OR LOWER(state) = '".strtolower(userCityId())."' OR " . implode(' OR ', $metroCityConditions) . " )";
+				
 			} else {
-				$queryCity = "( city_id = '".userCityId()."' OR LOWER(city) = '".strtolower(userCityId())."'  OR LOWER(state) = '".strtolower(userCityId())."' )";
+				// Single word - could be city name or state name
+				$isStateSearch = isset($stateMapping[strtolower($userCity)]);
+				
+				if ($isStateSearch) {
+					// State search - EXACT FIELD MATCHING ONLY (no substring matching)
+					$stateAbbrev = $stateMapping[strtolower($userCity)];
+					
+					// Database state fields
+					$cityConditions[] = "LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($userCity) . "'))";
+					$cityConditions[] = "LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($stateAbbrev) . "'))";
+					
+					// JSON state fields
+					$cityConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.state'))) = LOWER('" . $this->db->escape_str($userCity) . "')";
+					$cityConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.state'))) = LOWER('" . $this->db->escape_str($stateAbbrev) . "')";
+					
+					// JSON address field - only if it contains the full state name or abbreviation with delimiters
+					$cityConditions[] = "(LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.address'))) LIKE '%, " . $this->db->escape_like_str(strtolower($stateAbbrev)) . " %' OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.address'))) LIKE '%, " . $this->db->escape_like_str(strtolower($stateAbbrev)) . ",%')";
+					
+				} else {
+					// City search - check if it's part of a metro area
+					$metroArea = findMetroAreaByCity($userCity);
+					
+					if ($metroArea !== false) {
+						// This city is part of a metro area - include all metro cities
+						$metroCities = getMetroAreaCities($metroArea['key']);
+						
+						// Add conditions for all cities in the metro area
+						foreach ($metroCities as $metroCity) {
+							// Database field matching
+							$cityConditions[] = "(LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($metroCity) . "')))";
+							
+							// JSON field matching
+							$cityConditions[] = "(LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.city'))) = LOWER('" . $this->db->escape_str($metroCity) . "'))";
+							
+							// JSON address field matching
+							$cityConditions[] = "(LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.address'))) LIKE '%" . $this->db->escape_like_str(strtolower($metroCity)) . "%')";
+						}
+						
+						// Store metro area info for display
+						$this->data['metro_area_info'] = array(
+							'key' => $metroArea['key'],
+							'main_city' => $metroArea['data']['main_city'],
+							'search_city' => $userCity,
+							'all_cities' => $metroCities,
+							'nearby_count' => count($metroCities) - 1 // Exclude the searched city itself
+						);
+					} else {
+						// Not a metro area - use standard city matching
+						$cityConditions[] = "LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($userCity) . "'))";
+						$cityConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.city'))) = LOWER('" . $this->db->escape_str($userCity) . "')";
+						$cityConditions[] = "LOWER(city) LIKE '%" . $this->db->escape_like_str(strtolower($userCity)) . "%'";
+						$cityConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.city'))) LIKE '%" . $this->db->escape_like_str(strtolower($userCity)) . "%'";
+					}
+				}
 			}
 			
-			$this->data['country_city_ConditionQuery_classified'] = ' AND country_id = ' . userCountryId() . ' AND ' .$queryCity;
+			$queryCity = "(" . implode(' OR ', $cityConditions) . ")";
+			
+			$this->data['country_city_ConditionQuery'] = ' AND country_id = ' . userCountryId() . ' AND city_id = \'' . $this->db->escape_str($userCity) . '\'';
+			$this->data['country_city_ConditionQuery_classified'] = ' AND country_id = ' . userCountryId() . ' AND ' . $queryCity;
 			$this->data['country_ConditionQuery'] = ' AND ad_expires > "' . date('Y-m-d') . '" AND country_id = ' . userCountryId(); // only for product ads
+			
+			// Generate location priority sorting for metro areas
+			$this->data['location_priority_sort'] = $this->generateLocationPrioritySort($userCity);
+			
 
 		}else if(isset($_COOKIE['user_country_id']) && !isset($_COOKIE['user_city_id'])) {
 			
@@ -92,6 +241,100 @@ class Nepstate extends ADMIN_Controller {
 		
 		$this->data['blog_forum_confession_condition_query'] = '';
 		
+	}
+	
+	/**
+	 * Generate location priority sorting for metro areas
+	 */
+	private function generateLocationPrioritySort($userCity) {
+		// State mapping for abbreviations
+		$stateMapping = array(
+			'alabama' => 'al', 'alaska' => 'ak', 'arizona' => 'az', 'arkansas' => 'ar', 'california' => 'ca',
+			'colorado' => 'co', 'connecticut' => 'ct', 'delaware' => 'de', 'florida' => 'fl', 'georgia' => 'ga',
+			'hawaii' => 'hi', 'idaho' => 'id', 'illinois' => 'il', 'indiana' => 'in', 'iowa' => 'ia',
+			'kansas' => 'ks', 'kentucky' => 'ky', 'louisiana' => 'la', 'maine' => 'me', 'maryland' => 'md',
+			'massachusetts' => 'ma', 'michigan' => 'mi', 'minnesota' => 'mn', 'mississippi' => 'ms', 'missouri' => 'mo',
+			'montana' => 'mt', 'nebraska' => 'ne', 'nevada' => 'nv', 'new hampshire' => 'nh', 'new jersey' => 'nj',
+			'new mexico' => 'nm', 'new york' => 'ny', 'north carolina' => 'nc', 'north dakota' => 'nd', 'ohio' => 'oh',
+			'oklahoma' => 'ok', 'oregon' => 'or', 'pennsylvania' => 'pa', 'rhode island' => 'ri', 'south carolina' => 'sc',
+			'south dakota' => 'sd', 'tennessee' => 'tn', 'texas' => 'tx', 'utah' => 'ut', 'vermont' => 'vt',
+			'virginia' => 'va', 'washington' => 'wa', 'west virginia' => 'wv', 'wisconsin' => 'wi', 'wyoming' => 'wy'
+		);
+		
+		// If we have "City, State" format, prioritize exact city matches
+		if(strpos($userCity, ',') !== false) {
+			$parts = explode(',', $userCity);
+			$searchCity = trim($parts[0]);
+			$searchState = trim($parts[1]);
+			$stateAbbrev = isset($stateMapping[strtolower($searchState)]) ? $stateMapping[strtolower($searchState)] : '';
+			
+			// Load metro areas configuration
+			require_once APPPATH . 'config/metro_areas.php';
+			
+			// Check if this city is part of a metro area
+			$metroArea = findMetroAreaByCity($searchCity, $searchState);
+			
+			if ($metroArea !== false) {
+				// This city is part of a metro area - create grouping logic
+				$metroCities = getMetroAreaCities($metroArea['key']);
+				$priority = 1;
+				
+				$location_priority = " ORDER BY 
+					CASE ";
+				
+				// Add searched city as highest priority (1)
+				$location_priority .= "WHEN (LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($searchCity) . "')) AND LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($searchState) . "'))) THEN " . $priority++ . " ";
+				$location_priority .= "WHEN (LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($searchCity)) . "%' AND LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($searchState)) . "%') THEN " . $priority++ . " ";
+				$location_priority .= "WHEN (LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($searchCity)) . "%' AND LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($searchState == "Texas" ? "tx" : ($searchState == "New York" ? "ny" : $searchState))) . "%') THEN " . $priority++ . " ";
+				
+				// Add other metro area cities as second priority (2, 3, 4, etc.)
+				foreach ($metroCities as $metroCity) {
+					if (strtolower($metroCity) !== strtolower($searchCity)) {
+						$location_priority .= "WHEN (LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($metroCity) . "')) AND (LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($searchState) . "')) OR LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($stateAbbrev) . "')))) THEN " . $priority++ . " ";
+						$location_priority .= "WHEN (LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($metroCity)) . "%' AND (LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($searchState)) . "%' OR LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($stateAbbrev)) . "%')) THEN " . $priority++ . " ";
+					}
+				}
+				
+				$location_priority .= "ELSE 999
+					END, 
+					CASE 
+						WHEN LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($searchCity) . "')) THEN '1_" . $this->db->escape_str($searchCity) . "'
+						WHEN LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($searchCity)) . "%' THEN '1_" . $this->db->escape_str($searchCity) . "'";
+				
+				// Add grouping for each metro city
+				foreach ($metroCities as $metroCity) {
+					if (strtolower($metroCity) !== strtolower($searchCity)) {
+						$location_priority .= "
+						WHEN LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($metroCity) . "')) THEN '2_" . $this->db->escape_str($metroCity) . "'
+						WHEN LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($metroCity)) . "%' THEN '2_" . $this->db->escape_str($metroCity) . "'";
+					}
+				}
+				
+				$location_priority .= "
+						ELSE '999_Other'
+					END, ";
+			} else {
+				// Not a metro area - use simple city matching
+				$location_priority = " ORDER BY 
+					CASE 
+						WHEN (LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($searchCity) . "')) AND LOWER(TRIM(state)) = LOWER(TRIM('" . $this->db->escape_str($searchState) . "')))
+							 OR (LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($searchCity)) . "%' AND LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($searchState)) . "%')
+							 OR (LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($searchCity)) . "%' AND LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($searchState == "Texas" ? "tx" : ($searchState == "New York" ? "ny" : $searchState))) . "%') THEN 1
+						ELSE 2
+					END, 
+					city, ";
+			}
+		} else {
+			// Legacy format - just city name
+			$location_priority = " ORDER BY 
+				CASE 
+					WHEN LOWER(TRIM(city)) = LOWER(TRIM('" . $this->db->escape_str($userCity) . "'))
+						 OR LOWER(json_content) LIKE '%" . $this->db->escape_like_str(strtolower($userCity)) . "%' THEN 1
+					ELSE 2
+				END, ";
+		}
+		
+		return $location_priority;
 	}
 	
 	/**
@@ -347,6 +590,12 @@ class Nepstate extends ADMIN_Controller {
 		$this->data['show_home'] = 0;
 		$this->data['advance_search'] = $_GET['advance_search'] ?? 0;
 		$this->data['country_id'] = $_COOKIE['user_country_id'] ?? 0;
+		
+		// Ensure location_priority_sort is available
+		if (!isset($this->data['location_priority_sort'])) {
+			$this->data['location_priority_sort'] = " ORDER BY ";
+		}
+		
 		$this->load->view('frontend/classifieds',$this->data);
 	}
 
@@ -5804,6 +6053,7 @@ class Nepstate extends ADMIN_Controller {
 			$this->session->set_userdata('keyword', $keyword);
 			$this->session->set_userdata('userCityName', $userCityName);
 			$this->session->set_userdata('countryId', $countryId);
+			$this->session->set_userdata('search_location', $userCityName);
 
 			 // Redirect to the same function (GET request)
 			 redirect(current_url());
@@ -5815,50 +6065,63 @@ class Nepstate extends ADMIN_Controller {
 			$countryId = $this->session->userdata('countryId');
 		}
 
+		// Enhanced keyword search across multiple fields
+		$keywordConditions = array();
+		if (!empty($keyword)) {
+			$keywordConditions[] = "LOWER(title) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
+			$keywordConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.description'))) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
+			$keywordConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.service_name'))) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
+			$keywordConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.service_category'))) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
+			$keywordConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.service_tags'))) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
+			$keywordConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.tags'))) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
+		}
+
+		// Use existing metro area system from constructor
 		if($countryId && $userCityName != '') {
 			
-			$listOfClassifieds = $this->db->group_start()
-			->like('LOWER(title)', strtolower($keyword), 'both')
-			->or_like("LOWER(JSON_EXTRACT(json_content, '$.description'))", strtolower($keyword), 'both')
-			->group_start()
-			->where('city_id', $userCityName)
-			->or_where('LOWER(city)', strtolower($userCityName))
-			->or_where('LOWER(state)', strtolower($userCityName))
-			->group_end()
-			->group_end()
-			->where('country_id', $countryId)	
-		->where('status', 1)
-		->where('expiry_date >', date('Y-m-d'))
-		->get('products')
-		->result_object();
-
-		
+			$query = "SELECT * FROM products WHERE ";
+			
+			if (!empty($keywordConditions)) {
+				$query .= "(" . implode(' OR ', $keywordConditions) . ") AND ";
+			}
+			
+			// Use the existing metro area conditions from constructor
+			$query .= "1=1 " . $this->data['country_city_ConditionQuery_classified'] . " AND status = 1 AND expiry_date > '" . date('Y-m-d') . "'";
+			
+			$listOfClassifieds = $this->db->query($query)->result_object();
 		}
 
 		if($countryId && $userCityName == '') {
 			
-			$listOfClassifieds = $this->db->group_start()
-                                  ->like('LOWER(title)', strtolower($keyword), 'both')
-								  ->or_like("LOWER(JSON_EXTRACT(json_content, '$.description'))", strtolower($keyword), 'both')
-								  ->group_end()
-                                  ->where('country_id', $countryId)
-                              ->where('status', 1)
-							  ->where('expiry_date >', date('Y-m-d'))
-                              ->get('products')
-                              ->result_object();
-
+			$query = "SELECT * FROM products WHERE ";
+			
+			if (!empty($keywordConditions)) {
+				$query .= "(" . implode(' OR ', $keywordConditions) . ") AND ";
+			}
+			
+			$query .= "country_id = " . $countryId . " AND status = 1 AND expiry_date > '" . date('Y-m-d') . "'";
+			
+			$listOfClassifieds = $this->db->query($query)->result_object();
 		}
 
-		if(empty($listOfClassifieds)) {
-			 redirect(base_url());
-			die;
-		}
 
+		// Handle no results - show search page instead of redirecting
 		$this->data['page_url'] = "classifieds";
-		$this->data['slug'] = $id;
+		$this->data['slug'] = 'search';
 		$this->data['tags'] = 0;
 		$this->data['show_home'] = 0;
 		$this->data['all_products'] = $listOfClassifieds;
+		$this->data['search_keyword'] = $keyword;
+		$this->data['search_location'] = $userCityName;
+		$this->data['has_results'] = !empty($listOfClassifieds);
+		
+		// Debug: Check if metro area info is available
+		if(isset($this->data['metro_area_info'])) {
+			error_log("Metro area info available: " . json_encode($this->data['metro_area_info']));
+		} else {
+			error_log("No metro area info found");
+		}
+		
 		$this->load->view('frontend/search_classifieds.php',$this->data);
 
 	}
@@ -7142,109 +7405,5 @@ public function chatMain($productId)
 		}
 		
 		echo "</pre>";
-	}
-	
-	/**
-	 * Get metro area cities for a given location
-	 * Returns array of city names that are part of the same metro area
-	 */
-	private function getMetroAreaCities($selectedLocation) {
-		// Metro area mappings - key is the main city, value is array of metro cities
-		$metroAreas = array(
-			// Dallas-Fort Worth Metroplex
-			'dallas tx' => array('irving', 'euless', 'plano', 'richardson', 'garland', 'mesquite', 'mckinney', 'frisco', 'allen', 'denton', 'lewisville', 'flower mound', 'colleyville', 'grapevine', 'coppell', 'carrollton', 'the colony', 'keller', 'southlake', 'westlake', 'fort worth', 'arlington', 'grand prairie', 'mansfield', 'cedar hill', 'duncanville', 'desoto', 'lancaster'),
-			'dallas' => array('irving', 'euless', 'plano', 'richardson', 'garland', 'mesquite', 'mckinney', 'frisco', 'allen', 'denton', 'lewisville', 'flower mound', 'colleyville', 'grapevine', 'coppell', 'carrollton', 'the colony', 'keller', 'southlake', 'westlake', 'fort worth', 'arlington', 'grand prairie', 'mansfield', 'cedar hill', 'duncanville', 'desoto', 'lancaster'),
-			
-			// Houston Metro Area
-			'houston tx' => array('sugar land', 'missouri city', 'pearland', 'katy', 'cypress', 'spring', 'the woodlands', 'conroe', 'league city', 'friendswood', 'pasadena', 'baytown', 'deer park', 'la porte', 'webster', 'stafford', 'richmond', 'rosenberg'),
-			'houston' => array('sugar land', 'missouri city', 'pearland', 'katy', 'cypress', 'spring', 'the woodlands', 'conroe', 'league city', 'friendswood', 'pasadena', 'baytown', 'deer park', 'la porte', 'webster', 'stafford', 'richmond', 'rosenberg'),
-			
-			// San Antonio Metro Area
-			'san antonio tx' => array('new braunfels', 'schertz', 'universal city', 'live oak', 'converse', 'windcrest', 'leon valley', 'castle hills', 'terrell hills', 'olmos park'),
-			'san antonio' => array('new braunfels', 'schertz', 'universal city', 'live oak', 'converse', 'windcrest', 'leon valley', 'castle hills', 'terrell hills', 'olmos park'),
-			
-			// Austin Metro Area
-			'austin tx' => array('round rock', 'cedar park', 'pflugerville', 'leander', 'georgetown', 'hutto', 'taylor', 'elgin', 'bastrop', 'san marcos', 'kyle', 'buddy', 'lakeway', 'bee cave', 'west lake hills'),
-			'austin' => array('round rock', 'cedar park', 'pflugerville', 'leander', 'georgetown', 'hutto', 'taylor', 'elgin', 'bastrop', 'san marcos', 'kyle', 'buddy', 'lakeway', 'bee cave', 'west lake hills'),
-			
-			// Phoenix Metro Area
-			'phoenix az' => array('mesa', 'chandler', 'glendale', 'scottsdale', 'gilbert', 'tempe', 'peoria', 'surprise', 'avondale', 'goodyear', 'buckeye', 'queen creek', 'apache junction', 'casa grande'),
-			'phoenix' => array('mesa', 'chandler', 'glendale', 'scottsdale', 'gilbert', 'tempe', 'peoria', 'surprise', 'avondale', 'goodyear', 'buckeye', 'queen creek', 'apache junction', 'casa grande'),
-			
-			// Chicago Metro Area
-			'chicago il' => array('aurora', 'rockford', 'joliet', 'naperville', 'springfield', 'peoria', 'elgin', 'waukegan', 'cicero', 'champaign', 'bloomington', 'arlington heights', 'evanston', 'decatur', 'schaumburg', 'bolingbrook', 'palatine', 'skokie', 'des plaines', 'orland park'),
-			'chicago' => array('aurora', 'rockford', 'joliet', 'naperville', 'springfield', 'peoria', 'elgin', 'waukegan', 'cicero', 'champaign', 'bloomington', 'arlington heights', 'evanston', 'decatur', 'schaumburg', 'bolingbrook', 'palatine', 'skokie', 'des plaines', 'orland park'),
-			
-			// New York Metro Area
-			'new york ny' => array('brooklyn', 'queens', 'bronx', 'staten island', 'yonkers', 'rochester', 'syracuse', 'albany', 'new rochelle', 'mount vernon', 'white plains', 'troy', 'utica', 'schenectady', 'westchester county'),
-			'new york' => array('brooklyn', 'queens', 'bronx', 'staten island', 'yonkers', 'rochester', 'syracuse', 'albany', 'new rochelle', 'mount vernon', 'white plains', 'troy', 'utica', 'schenectady', 'westchester county'),
-			
-			// Los Angeles Metro Area
-			'los angeles ca' => array('long beach', 'santa ana', 'anaheim', 'riverside', 'stockton', 'irvine', 'chula vista', 'fremont', 'san bernardino', 'modesto', 'fontana', 'oxnard', 'moreno valley', 'huntington beach', 'glendale', 'santa clarita', 'garden grove', 'oceanside', 'rancho cucamonga', 'santa rosa', 'ontario', 'corona', 'pomona', 'palmdale', 'salinas', 'pasadena', 'torrance', 'hayward', 'escondido', 'santa clara', 'vallejo'),
-			'los angeles' => array('long beach', 'santa ana', 'anaheim', 'riverside', 'stockton', 'irvine', 'chula vista', 'fremont', 'san bernardino', 'modesto', 'fontana', 'oxnard', 'moreno valley', 'huntington beach', 'glendale', 'santa clarita', 'garden grove', 'oceanside', 'rancho cucamonga', 'santa rosa', 'ontario', 'corona', 'pomona', 'palmdale', 'salinas', 'pasadena', 'torrance', 'hayward', 'escondido', 'santa clara', 'vallejo'),
-			
-			// San Francisco Bay Area
-			'san francisco ca' => array('san jose', 'oakland', 'fremont', 'richmond', 'sunnyvale', 'santa clara', 'san mateo', 'hayward', 'concord', 'vallejo', 'berkeley', 'fairfield', 'antioch', 'daly city', 'santa rosa', 'san leandro', 'livermore', 'redwood city', 'alameda', 'south san francisco', 'union city', 'novato', 'san rafael', 'mountain view', 'redwood city', 'palo alto', 'cupertino', 'foster city', 'belmont', 'san carlos', 'menlo park', 'millbrae', 'burlingame'),
-			'san francisco' => array('san jose', 'oakland', 'fremont', 'richmond', 'sunnyvale', 'santa clara', 'san mateo', 'hayward', 'concord', 'vallejo', 'berkeley', 'fairfield', 'antioch', 'daly city', 'santa rosa', 'san leandro', 'livermore', 'redwood city', 'alameda', 'south san francisco', 'union city', 'novato', 'san rafael', 'mountain view', 'redwood city', 'palo alto', 'cupertino', 'foster city', 'belmont', 'san carlos', 'menlo park', 'millbrae', 'burlingame'),
-			
-			// Seattle Metro Area
-			'seattle wa' => array('spokane', 'tacoma', 'vancouver', 'bellevue', 'kent', 'everett', 'renton', 'yakima', 'federal way', 'spokane valley', 'bellingham', 'kennewick', 'auburn', 'pasco', 'marysville', 'lakewood', 'redmond', 'shoreline', 'richland', 'kirkland', 'burien', 'olympia', 'lacey', 'bremerton', 'puyallup', 'sumner', 'bonney lake', 'enumclaw', 'buckley'),
-			'seattle' => array('spokane', 'tacoma', 'vancouver', 'bellevue', 'kent', 'everett', 'renton', 'yakima', 'federal way', 'spokane valley', 'bellingham', 'kennewick', 'auburn', 'pasco', 'marysville', 'lakewood', 'redmond', 'shoreline', 'richland', 'kirkland', 'burien', 'olympia', 'lacey', 'bremerton', 'puyallup', 'sumner', 'bonney lake', 'enumclaw', 'buckley'),
-			
-			// Denver Metro Area
-			'denver co' => array('colorado springs', 'aurora', 'fort collins', 'lakewood', 'thornton', 'westminster', 'arvada', 'pueblo', 'centennial', 'boulder', 'greeley', 'longmont', 'loveland', 'grand junction', 'broomfield', 'northglenn', 'wheat ridge', 'commerce city', 'englewood', 'greenwood village', 'littleton', 'glendale', 'cherry hills village'),
-			'denver' => array('colorado springs', 'aurora', 'fort collins', 'lakewood', 'thornton', 'westminster', 'arvada', 'pueblo', 'centennial', 'boulder', 'greeley', 'longmont', 'loveland', 'grand junction', 'broomfield', 'northglenn', 'wheat ridge', 'commerce city', 'englewood', 'greenwood village', 'littleton', 'glendale', 'cherry hills village'),
-			
-			// Washington DC Metro Area
-			'washington dc' => array('arlington', 'alexandria', 'fairfax', 'falls church', 'springfield', 'annandale', 'vienna', 'mclean', 'great falls', 'reston', 'herndon', 'sterling', 'leesburg', 'ashburn', 'dulles', 'chantilly', 'centreville', 'manassas', 'woodbridge', 'stafford', 'fredericksburg', 'bethesda', 'rockville', 'gaithersburg', 'germantown', 'silver spring', 'wheaton', 'takoma park', 'college park', 'hyattsville', 'laurel', 'bowie', 'greenbelt'),
-			'washington' => array('arlington', 'alexandria', 'fairfax', 'falls church', 'springfield', 'annandale', 'vienna', 'mclean', 'great falls', 'reston', 'herndon', 'sterling', 'leesburg', 'ashburn', 'dulles', 'chantilly', 'centreville', 'manassas', 'woodbridge', 'stafford', 'fredericksburg', 'bethesda', 'rockville', 'gaithersburg', 'germantown', 'silver spring', 'wheaton', 'takoma park', 'college park', 'hyattsville', 'laurel', 'bowie', 'greenbelt'),
-			
-			// Boston Metro Area
-			'boston ma' => array('worcester', 'springfield', 'lowell', 'cambridge', 'newton', 'brookline', 'quincy', 'lynn', 'newton', 'somerville', 'framingham', 'waltham', 'malden', 'brookline', 'medford', 'taunton', 'chicopee', 'weymouth', 'revere', 'peabody', 'methuen', 'barnstable', 'pittsfield', 'attleboro', 'everett', 'salem', 'beverly', 'gloucester', 'newburyport'),
-			'boston' => array('worcester', 'springfield', 'lowell', 'cambridge', 'newton', 'brookline', 'quincy', 'lynn', 'newton', 'somerville', 'framingham', 'waltham', 'malden', 'brookline', 'medford', 'taunton', 'chicopee', 'weymouth', 'revere', 'peabody', 'methuen', 'barnstable', 'pittsfield', 'attleboro', 'everett', 'salem', 'beverly', 'gloucester', 'newburyport'),
-			
-			// Atlanta Metro Area
-			'atlanta ga' => array('augusta', 'columbus', 'savannah', 'athens', 'sandy springs', 'roswell', 'macon', 'johns creek', 'albany', 'warner robins', 'alpharetta', 'valdosta', 'smyrna', 'dunwoody', 'rome', 'east point', 'peachtree corners', 'lawrenceville', 'marietta', 'kennesaw', 'duluth', 'chamblee', 'stockbridge', 'griffin', 'carrollton', 'sugar hill', 'tucker', 'south fulton', 'fayetteville', 'peachtree city'),
-			'atlanta' => array('augusta', 'columbus', 'savannah', 'athens', 'sandy springs', 'roswell', 'macon', 'johns creek', 'albany', 'warner robins', 'alpharetta', 'valdosta', 'smyrna', 'dunwoody', 'rome', 'east point', 'peachtree corners', 'lawrenceville', 'marietta', 'kennesaw', 'duluth', 'chamblee', 'stockbridge', 'griffin', 'carrollton', 'sugar hill', 'tucker', 'south fulton', 'fayetteville', 'peachtree city'),
-			
-			// Miami Metro Area
-			'miami fl' => array('hialeah', 'fort lauderdale', 'port st. lucie', 'cape coral', 'tallahassee', 'pembroke pines', 'hollywood', 'miramar', 'coral springs', 'miami gardens', 'sunrise', 'plantation', 'davie', 'boca raton', 'deltona', 'palm bay', 'west palm beach', 'clearwater', 'pompano beach', 'lauderhill', 'tamarac', 'weston', 'coconut creek', 'boynton beach', 'deerfield beach', 'delray beach', 'jupiter', 'broward county', 'dade county'),
-			'miami' => array('hialeah', 'fort lauderdale', 'port st. lucie', 'cape coral', 'tallahassee', 'pembroke pines', 'hollywood', 'miramar', 'coral springs', 'miami gardens', 'sunrise', 'plantation', 'davie', 'boca raton', 'deltona', 'palm bay', 'west palm beach', 'clearwater', 'pompano beach', 'lauderhill', 'tamarac', 'weston', 'coconut creek', 'boynton beach', 'deerfield beach', 'delray beach', 'jupiter', 'broward county', 'dade county'),
-			
-			// Detroit Metro Area
-			'detroit mi' => array('grand rapids', 'warren', 'sterling heights', 'lansing', 'ann arbor', 'flint', 'dearborn', 'livonia', 'westland', 'troy', 'farmington hills', 'kalamazoo', 'wyoming', 'southfield', 'rochester hills', 'taylor', 'pontiac', 'st. clair shores', 'royal oak', 'novi', 'dearborn heights', 'saginaw', 'muskegon', 'battle creek', 'bay city', 'jackson', 'midland', 'portage', 'east lansing'),
-			'detroit' => array('grand rapids', 'warren', 'sterling heights', 'lansing', 'ann arbor', 'flint', 'dearborn', 'livonia', 'westland', 'troy', 'farmington hills', 'kalamazoo', 'wyoming', 'southfield', 'rochester hills', 'taylor', 'pontiac', 'st. clair shores', 'royal oak', 'novi', 'dearborn heights', 'saginaw', 'muskegon', 'battle creek', 'bay city', 'jackson', 'midland', 'portage', 'east lansing'),
-			
-			// Minneapolis-St. Paul Metro Area
-			'minneapolis mn' => array('st. paul', 'rochester', 'duluth', 'bloomington', 'brooklyn park', 'plymouth', 'st. cloud', 'eagan', 'woodbury', 'maple grove', 'eden prairie', 'minnetonka', 'burnsville', 'lakeville', 'apple valley', 'eagan', 'west st. paul', 'south st. paul', 'inver grove heights', 'mendota heights', 'richfield', 'edina', 'hopkins', 'golden valley', 'new hope', 'crystal', 'robbinsdale', 'new brighton', 'roseville', 'falcon heights', 'lauderdale', 'st. anthony'),
-			'minneapolis' => array('st. paul', 'rochester', 'duluth', 'bloomington', 'brooklyn park', 'plymouth', 'st. cloud', 'eagan', 'woodbury', 'maple grove', 'eden prairie', 'minnetonka', 'burnsville', 'lakeville', 'apple valley', 'eagan', 'west st. paul', 'south st. paul', 'inver grove heights', 'mendota heights', 'richfield', 'edina', 'hopkins', 'golden valley', 'new hope', 'crystal', 'robbinsdale', 'new brighton', 'roseville', 'falcon heights', 'lauderdale', 'st. anthony'),
-			
-			// Philadelphia Metro Area
-			'philadelphia pa' => array('pittsburgh', 'allentown', 'erie', 'reading', 'scranton', 'bethlehem', 'lancaster', 'harrisburg', 'altoona', 'york', 'state college', 'chester', 'upper darby', 'bristol', 'norristown', 'abington', 'bensalem', 'bucks county', 'montgomery county', 'delaware county', 'chester county'),
-			'philadelphia' => array('pittsburgh', 'allentown', 'erie', 'reading', 'scranton', 'bethlehem', 'lancaster', 'harrisburg', 'altoona', 'york', 'state college', 'chester', 'upper darby', 'bristol', 'norristown', 'abington', 'bensalem', 'bucks county', 'montgomery county', 'delaware county', 'chester county'),
-			
-			// Las Vegas Metro Area
-			'las vegas nv' => array('henderson', 'north las vegas', 'reno', 'sparks', 'carson city', 'mesquite', 'boulder city', 'pahrump', 'elko', 'fernley', 'west wendover', 'ely', 'winnemucca', 'fallon', 'lovelock', 'tonopah', 'caliente', 'yerington', 'hawthorne', 'laughlin'),
-			'las vegas' => array('henderson', 'north las vegas', 'reno', 'sparks', 'carson city', 'mesquite', 'boulder city', 'pahrump', 'elko', 'fernley', 'west wendover', 'ely', 'winnemucca', 'fallon', 'lovelock', 'tonopah', 'caliente', 'yerington', 'hawthorne', 'laughlin'),
-			
-			// Portland Metro Area
-			'portland or' => array('salem', 'eugene', 'gresham', 'hillsboro', 'bend', 'medford', 'springfield', 'corvallis', 'albany', 'tigard', 'lake oswego', 'keizer', 'oregon city', 'beaverton', 'tualatin', 'west linn', 'milwaukie', 'clackamas', 'happy valley', 'gladstone', 'troutdale', 'fairview', 'wood village', 'damascus', 'sandy', 'estacada', 'canby', 'molalla', 'wilsonville', 'sherwood', 'forest grove', 'cornelius', 'hillsboro'),
-			'portland' => array('salem', 'eugene', 'gresham', 'hillsboro', 'bend', 'medford', 'springfield', 'corvallis', 'albany', 'tigard', 'lake oswego', 'keizer', 'oregon city', 'beaverton', 'tualatin', 'west linn', 'milwaukie', 'clackamas', 'happy valley', 'gladstone', 'troutdale', 'fairview', 'wood village', 'damascus', 'sandy', 'estacada', 'canby', 'molalla', 'wilsonville', 'sherwood', 'forest grove', 'cornelius', 'hillsboro'),
-			
-			// Milwaukee Metro Area
-			'milwaukee wi' => array('madison', 'green bay', 'kenosha', 'racine', 'appleton', 'oshkosh', 'eau claire', 'janesville', 'west allis', 'la crosse', 'sheboygan', 'waukesha', 'oshkosh', 'fond du lac', 'brookfield', 'new berlin', 'wauwatosa', 'muskego', 'menomonee falls', 'franklin', 'oak creek', 'south milwaukee', 'st. francis', 'cudahy', 'shorewood', 'whitefish bay', 'glendale', 'brown deer', 'river hills', 'bayside', 'fox point'),
-			'milwaukee' => array('madison', 'green bay', 'kenosha', 'racine', 'appleton', 'oshkosh', 'eau claire', 'janesville', 'west allis', 'la crosse', 'sheboygan', 'waukesha', 'oshkosh', 'fond du lac', 'brookfield', 'new berlin', 'wauwatosa', 'muskego', 'menomonee falls', 'franklin', 'oak creek', 'south milwaukee', 'st. francis', 'cudahy', 'shorewood', 'whitefish bay', 'glendale', 'brown deer', 'river hills', 'bayside', 'fox point')
-		);
-		
-		// Normalize the input location
-		$normalizedLocation = strtolower(trim($selectedLocation));
-		
-		// Check if the location exists in our metro area mappings
-		if (isset($metroAreas[$normalizedLocation])) {
-			return $metroAreas[$normalizedLocation];
-		}
-		
-		// If no metro area found, return empty array (will use exact match only)
-		return array();
 	}
 }

@@ -124,6 +124,7 @@ $route['country-selection'] = 'Nepstate/countrySelection';
 $route['cancel-country-selection'] = 'Nepstate/cancelCountrySelection';
 
 $route['update-user-country/(:any)'] = 'Nepstate/updateUserCountry/$1';
+$route['debug-location-filter'] = 'Nepstate/debugLocationFilter';
 $route['switch-country/(:any)'] = 'Nepstate/countrySwitch/$1';
 $route['api/get_cities'] = 'ApiController/getCitiesByCountry';
 
