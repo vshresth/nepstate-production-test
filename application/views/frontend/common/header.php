@@ -103,8 +103,8 @@ dataLayer.push({
 	<script src="<?php echo $assets;?>assets/js/rtcl-common.min.js" ></script>
 	<?php */ ?>
 	
-	<link rel="canonical" href="<?php echo base_url();?>">
-	<link rel="shortlink" href="<?php echo base_url();?>">
+	<link rel="canonical" href="<?php echo isset($canonical_url) ? $canonical_url : current_url(); ?>">
+	<link rel="shortlink" href="<?php echo isset($canonical_url) ? $canonical_url : current_url(); ?>">
 	<link rel="preload" as="font" type="font/woff2" crossorigin>
 	<link rel="preconnect">
 	
@@ -120,6 +120,12 @@ dataLayer.push({
 			    color: var(--color-primary) !important;
 		}
 	</style>
+	
+	<?php if(isset($structured_data)) { ?>
+	<script type="application/ld+json">
+	<?php echo json_encode($structured_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?>
+	</script>
+	<?php } ?>
 	
 </head>
 

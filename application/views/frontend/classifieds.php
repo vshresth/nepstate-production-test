@@ -6,6 +6,14 @@ $meta_description = "Find the best " . strtolower($category->title) . " listings
 $meta_keywords = $category->title . ", Nepalese " . strtolower($category->title) . ", " . strtolower($category->title) . " listings";
 $canonical_url = base_url() . "classifieds/" . $category->slug;
 
+// Generate breadcrumb structured data for category pages
+$breadcrumb_items = [
+    ['name' => 'Home', 'url' => base_url()],
+    ['name' => $category->title, 'url' => base_url() . 'classifieds/' . $category->slug]
+];
+
+$structured_data = function_exists('generate_structured_data') ? generate_structured_data('breadcrumb', ['items' => $breadcrumb_items]) : null;
+
 include("common/header.php"); 
 if(!isset($_SESSION['show_popup_login'])){
     // echo $slug;

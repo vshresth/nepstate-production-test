@@ -80,7 +80,7 @@
         'image' => $og_image
     ];
     
-    $structured_data = generate_structured_data('localbusiness', $business_data);
+    $structured_data = function_exists('generate_structured_data') ? generate_structured_data('localbusiness', $business_data) : null;
     
     // Generate breadcrumb structured data
     $breadcrumb_items = [
@@ -89,7 +89,7 @@
         ['name' => $row->title, 'url' => base_url() . "classified/detail/" . $row->slug]
     ];
     
-    $breadcrumb_data = generate_structured_data('breadcrumb', ['items' => $breadcrumb_items]);
+    $breadcrumb_data = function_exists('generate_structured_data') ? generate_structured_data('breadcrumb', ['items' => $breadcrumb_items]) : null;
     
     // Combine structured data
     if ($structured_data && $breadcrumb_data) {

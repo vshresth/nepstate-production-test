@@ -14,9 +14,10 @@ class Nepstate extends ADMIN_Controller {
 		parent::__construct();
 		error_reporting(1);
 		
-		$this->load->library('form_validation');
-		$this->load->library('session');
+        $this->load->library('form_validation');
+        $this->load->library('session');
         $this->load->helper('url');
+        $this->load->helper('general');
         $this->load->database();
         $this->db->reconnect();
         

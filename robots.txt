@@ -1,3 +1,42 @@
 User-Agent: *
- 
+Allow: /
+Disallow: /admin/
+Disallow: /application/
+Disallow: /system/
+Disallow: /uploads/temp/
+Disallow: /new/post/
+Disallow: /my-account/
+Disallow: /dashboard/
+Disallow: /chat/
+Disallow: /forgot/
+Disallow: /password_reset/
+Disallow: /signup/
+Disallow: /new-email/
+Disallow: /notifications/
+Disallow: /favorites/
+Disallow: /my_ads/
+Disallow: /my_listings/
+Disallow: /my_blogs/
+Disallow: /my_chat/
+Disallow: /my_reviews/
+Disallow: /my-comments/
+Disallow: /my-payments/
+Disallow: /profile/
+Disallow: /change_password/
+Disallow: /delete_account/
+Disallow: /promote_website/
+Disallow: /pricing/
+Disallow: /post_classifieds/
+Disallow: /post_blog/
+Disallow: /post_confession/
+Disallow: /post-forum/
+
+# Allow important directories
+Allow: /resources/
+Allow: /uploads/classified-listing/
+Allow: /uploads/blogs/
+Allow: /uploads/forums/
+
+# Sitemaps
 Sitemap: https://nepstate.com/sitemap.xml
+Sitemap: https://nepstate.com/sitemap_generator.php

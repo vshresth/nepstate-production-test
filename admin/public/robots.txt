@@ -1,2 +1,3 @@
-User-agent: *
-Disallow:
+User-Agent: *
+ 
+Sitemap: https://nepstate.com/sitemap.xml

@@ -895,4 +895,145 @@ if (!function_exists('notificationContent')) {
 		
 
     }
+
+    /**
+     * Generate structured data for SEO
+     * @param string $type Type of structured data (organization, localbusiness, event, etc.)
+     * @param array $data Data array for the structured data
+     * @return array Structured data array
+     */
+    if (!function_exists('generate_structured_data')) {
+        function generate_structured_data($type, $data = []) {
+            $base_url = base_url();
+            
+            switch($type) {
+                case 'organization':
+                    return [
+                        "@context" => "https://schema.org",
+                        "@type" => "Organization",
+                        "name" => "NepState",
+                        "url" => $base_url,
+                        "logo" => $base_url . "resources/frontend/assets/images/logo.png",
+                        "description" => "Connect Nepalese globally through business directory and community platform",
+                        "sameAs" => [
+                            "https://www.facebook.com/nepstate",
+                            "https://www.instagram.com/nepstate"
+                        ],
+                        "contactPoint" => [
+                            "@type" => "ContactPoint",
+                            "contactType" => "customer service",
+                            "url" => $base_url . "contact-us"
+                        ]
+                    ];
+                    
+                case 'localbusiness':
+                    if (empty($data['name'])) return null;
+                    
+                    $business_data = [
+                        "@context" => "https://schema.org",
+                        "@type" => "LocalBusiness",
+                        "name" => $data['name'],
+                        "description" => isset($data['description']) ? strip_tags($data['description']) : '',
+                        "url" => isset($data['url']) ? $data['url'] : $base_url
+                    ];
+                    
+                    // Add address if available
+                    if (isset($data['address']) && !empty($data['address'])) {
+                        $business_data["address"] = [
+                            "@type" => "PostalAddress",
+                            "streetAddress" => isset($data['address']) ? $data['address'] : '',
+                            "addressLocality" => isset($data['city']) ? $data['city'] : '',
+                            "addressRegion" => isset($data['state']) ? $data['state'] : '',
+                            "postalCode" => isset($data['zipcode']) ? $data['zipcode'] : '',
+                            "addressCountry" => isset($data['country']) ? $data['country'] : ''
+                        ];
+                    }
+                    
+                    // Add contact info
+                    if (isset($data['phone']) && !empty($data['phone'])) {
+                        $business_data["telephone"] = $data['phone'];
+                    }
+                    
+                    if (isset($data['email']) && !empty($data['email'])) {
+                        $business_data["email"] = $data['email'];
+                    }
+                    
+                    // Add image
+                    if (isset($data['image']) && !empty($data['image'])) {
+                        $business_data["image"] = $data['image'];
+                    }
+                    
+                    // Add business hours if available
+                    if (isset($data['hours']) && !empty($data['hours'])) {
+                        $business_data["openingHours"] = $data['hours'];
+                    }
+                    
+                    return $business_data;
+                    
+                case 'website':
+                    return [
+                        "@context" => "https://schema.org",
+                        "@type" => "WebSite",
+                        "name" => "NepState",
+                        "url" => $base_url,
+                        "description" => "Nepalese business directory and community platform",
+                        "potentialAction" => [
+                            "@type" => "SearchAction",
+                            "target" => $base_url . "?s={search_term_string}",
+                            "query-input" => "required name=search_term_string"
+                        ]
+                    ];
+                    
+                case 'breadcrumb':
+                    if (empty($data['items'])) return null;
+                    
+                    $breadcrumb_data = [
+                        "@context" => "https://schema.org",
+                        "@type" => "BreadcrumbList",
+                        "itemListElement" => []
+                    ];
+                    
+                    $position = 1;
+                    foreach($data['items'] as $item) {
+                        $breadcrumb_data["itemListElement"][] = [
+                            "@type" => "ListItem",
+                            "position" => $position,
+                            "name" => $item['name'],
+                            "item" => isset($item['url']) ? $item['url'] : ''
+                        ];
+                        $position++;
+                    }
+                    
+                    return $breadcrumb_data;
+                    
+                default:
+                    return null;
+            }
+        }
+    }
+
+    /**
+     * Generate optimized meta tags for SEO
+     * @param string $title Page title
+     * @param string $description Meta description
+     * @param string $keywords Meta keywords
+     * @param string $image Open Graph image
+     * @param string $type Open Graph type
+     * @return array Meta tags array
+     */
+    if (!function_exists('generate_meta_tags')) {
+        function generate_meta_tags($title = '', $description = '', $keywords = '', $image = '', $type = 'website') {
+            $base_url = base_url();
+            $current_url = current_url();
+            
+            return [
+                'page_title' => !empty($title) ? $title : "NepState - Connect Nepalese Globally",
+                'meta_description' => !empty($description) ? $description : "Discover Nepalese businesses, jobs, events, and community connections worldwide. Find restaurants, services, and connect with the Nepalese diaspora.",
+                'meta_keywords' => !empty($keywords) ? $keywords : "Nepalese business, Nepal community, Nepali restaurants, jobs Nepal, events Nepal, diaspora",
+                'og_image' => !empty($image) ? $image : $base_url . "resources/frontend/assets/images/logo.png",
+                'og_type' => $type,
+                'canonical_url' => $current_url
+            ];
+        }
+    }
 }

@@ -4,6 +4,16 @@ $page_title = "NepState - Connecting Nepalese Globally | Business Directory & Co
 $meta_description = "Join NepState, the largest Nepalese business directory worldwide. Find restaurants, jobs, events, and connect with the Nepalese diaspora. Discover authentic Nepali businesses near you.";
 $meta_keywords = "Nepalese business directory, Nepal community, Nepali restaurants, jobs Nepal, events Nepal, diaspora connections, business listings Nepal";
 $canonical_url = base_url();
+
+// Generate structured data for homepage
+$structured_data = function_exists('generate_structured_data') ? generate_structured_data('organization') : null;
+$website_data = function_exists('generate_structured_data') ? generate_structured_data('website') : null;
+
+// Combine structured data arrays
+if ($structured_data && $website_data) {
+    $structured_data = [$structured_data, $website_data];
+}
+
 include("common/header.php"); 
 ?>
 <style>

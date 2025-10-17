@@ -46,14 +46,14 @@
             <div class="rtcl-listing-badge-wrap"></div>
          </div>
          <div class="listing-thumb" onclick="do_redirect('<?php echo base_url();?>classified/detail/<?php echo $row->slug;?>')">
-            <a href="<?php echo base_url();?>classified/detail/<?php echo $row->slug;?>" class="rtcl-media grid-view-img"><img width="370" height="240" src="<?php echo $image_to_display;?>" class="rtcl-thumbnail" alt="r-5-min" title=""></a>
-            <a href="<?php echo base_url();?>classified/detail/<?php echo $row->slug;?>" class="rtcl-media list-view-img"><img width="350" height="270" src="<?php echo $image_to_display;?>" class="rtcl-thumbnail" alt="r-5-min" title=""></a>
+            <a href="<?php echo base_url();?>classified/detail/<?php echo $row->slug;?>" class="rtcl-media grid-view-img"><img width="370" height="240" src="<?php echo $image_to_display;?>" class="rtcl-thumbnail" alt="<?php echo htmlspecialchars($row->title); ?> - <?php echo htmlspecialchars($category_name->title); ?>" title="<?php echo htmlspecialchars($row->title); ?>"></a>
+            <a href="<?php echo base_url();?>classified/detail/<?php echo $row->slug;?>" class="rtcl-media list-view-img"><img width="350" height="270" src="<?php echo $image_to_display;?>" class="rtcl-thumbnail" alt="<?php echo htmlspecialchars($row->title); ?> - <?php echo htmlspecialchars($category_name->title); ?>" title="<?php echo htmlspecialchars($row->title); ?>"></a>
          </div>
          <?php /**/ ?>
          <div class="directory-block__poster" onclick="do_redirect('<?php echo base_url();?>classified/detail/<?php echo $row->slug;?>')">
             <div class="directory-block__poster__thumb">
                <a class="directory-block__poster__link--image">
-                <img class="image_40" src="<?php echo $url_image;?>" class="attachment-40x40 size-40x40" alt="" decoding="async" title="">    
+                <img class="image_40" src="<?php echo $url_image;?>" class="attachment-40x40 size-40x40" alt="<?php echo htmlspecialchars($user_details->first_name . ' ' . $user_details->last_name); ?>" decoding="async" title="<?php echo htmlspecialchars($user_details->first_name . ' ' . $user_details->last_name); ?>">    
             </a>
             </div>
             <div class="directory-block__poster__info">
