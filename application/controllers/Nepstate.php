@@ -6053,7 +6053,6 @@ class Nepstate extends ADMIN_Controller {
 			$this->session->set_userdata('keyword', $keyword);
 			$this->session->set_userdata('userCityName', $userCityName);
 			$this->session->set_userdata('countryId', $countryId);
-			$this->session->set_userdata('search_location', $userCityName);
 
 			 // Redirect to the same function (GET request)
 			 redirect(current_url());
@@ -6065,63 +6064,50 @@ class Nepstate extends ADMIN_Controller {
 			$countryId = $this->session->userdata('countryId');
 		}
 
-		// Enhanced keyword search across multiple fields
-		$keywordConditions = array();
-		if (!empty($keyword)) {
-			$keywordConditions[] = "LOWER(title) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
-			$keywordConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.description'))) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
-			$keywordConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.service_name'))) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
-			$keywordConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.service_category'))) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
-			$keywordConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.service_tags'))) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
-			$keywordConditions[] = "LOWER(JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.tags'))) LIKE '%" . $this->db->escape_like_str(strtolower($keyword)) . "%'";
-		}
-
-		// Use existing metro area system from constructor
 		if($countryId && $userCityName != '') {
 			
-			$query = "SELECT * FROM products WHERE ";
-			
-			if (!empty($keywordConditions)) {
-				$query .= "(" . implode(' OR ', $keywordConditions) . ") AND ";
-			}
-			
-			// Use the existing metro area conditions from constructor
-			$query .= "1=1 " . $this->data['country_city_ConditionQuery_classified'] . " AND status = 1 AND expiry_date > '" . date('Y-m-d') . "'";
-			
-			$listOfClassifieds = $this->db->query($query)->result_object();
+			$listOfClassifieds = $this->db->group_start()
+			->like('LOWER(title)', strtolower($keyword), 'both')
+			->or_like("LOWER(JSON_EXTRACT(json_content, '$.description'))", strtolower($keyword), 'both')
+			->group_start()
+			->where('city_id', $userCityName)
+			->or_where('LOWER(city)', strtolower($userCityName))
+			->or_where('LOWER(state)', strtolower($userCityName))
+			->group_end()
+			->group_end()
+			->where('country_id', $countryId)	
+		->where('status', 1)
+		->where('expiry_date >', date('Y-m-d'))
+		->get('products')
+		->result_object();
+
+		
 		}
 
 		if($countryId && $userCityName == '') {
 			
-			$query = "SELECT * FROM products WHERE ";
-			
-			if (!empty($keywordConditions)) {
-				$query .= "(" . implode(' OR ', $keywordConditions) . ") AND ";
-			}
-			
-			$query .= "country_id = " . $countryId . " AND status = 1 AND expiry_date > '" . date('Y-m-d') . "'";
-			
-			$listOfClassifieds = $this->db->query($query)->result_object();
+			$listOfClassifieds = $this->db->group_start()
+                                  ->like('LOWER(title)', strtolower($keyword), 'both')
+								  ->or_like("LOWER(JSON_EXTRACT(json_content, '$.description'))", strtolower($keyword), 'both')
+								  ->group_end()
+                                  ->where('country_id', $countryId)
+                              ->where('status', 1)
+							  ->where('expiry_date >', date('Y-m-d'))
+                              ->get('products')
+                              ->result_object();
+
 		}
 
+		if(empty($listOfClassifieds)) {
+			 redirect(base_url());
+			die;
+		}
 
-		// Handle no results - show search page instead of redirecting
 		$this->data['page_url'] = "classifieds";
-		$this->data['slug'] = 'search';
+		$this->data['slug'] = $id;
 		$this->data['tags'] = 0;
 		$this->data['show_home'] = 0;
 		$this->data['all_products'] = $listOfClassifieds;
-		$this->data['search_keyword'] = $keyword;
-		$this->data['search_location'] = $userCityName;
-		$this->data['has_results'] = !empty($listOfClassifieds);
-		
-		// Debug: Check if metro area info is available
-		if(isset($this->data['metro_area_info'])) {
-			error_log("Metro area info available: " . json_encode($this->data['metro_area_info']));
-		} else {
-			error_log("No metro area info found");
-		}
-		
 		$this->load->view('frontend/search_classifieds.php',$this->data);
 
 	}

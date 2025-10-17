@@ -87,6 +87,63 @@ $desc = strip_tags($json->description);
 echo (strlen($desc) > 70) ? substr($desc, 0, 70) . "..." : substr($desc, 0, 70); 
 ?>
          </p>
+         
+         <!-- Location Badge -->
+         <div style="text-align: center; margin: 8px 0;">
+             <?php 
+             $display_city = '';
+             $display_state = '';
+             
+             // Get city from various sources
+             if(isset($json->city) && !empty($json->city)) {
+                 $display_city = $json->city;
+             } elseif(isset($json->location) && !empty($json->location)) {
+                 $display_city = $json->location;
+             } elseif(isset($row->city) && !empty($row->city)) {
+                 $display_city = $row->city;
+             } elseif(isset($json->address) && !empty($json->address)) {
+                 // Parse address to extract city and state
+                 $address_parts = explode(',', $json->address);
+                 if(count($address_parts) >= 2) {
+                     // Format: "Sunset point, Flower Mound, TX, 75154"
+                     // Extract city (second part) and state (third part)
+                     $display_city = trim($address_parts[1]); // "Flower Mound"
+                     if(count($address_parts) >= 3) {
+                         $display_state = trim($address_parts[2]); // "TX"
+                     }
+                 }
+             }
+             
+             // Get state from various sources
+             if(isset($json->state) && !empty($json->state)) {
+                 $display_state = $json->state;
+             } elseif(isset($json->province) && !empty($json->province)) {
+                 $display_state = $json->province;
+             } elseif(isset($row->state) && !empty($row->state)) {
+                 $display_state = $row->state;
+             }
+              
+              // Display location badge if available
+              if(!empty($display_city) || !empty($display_state)) {
+                  $location_text = '';
+                  if(!empty($display_city) && !empty($display_state)) {
+                      $location_text = $display_city . ', ' . $display_state;
+                  } elseif(!empty($display_city)) {
+                      $location_text = $display_city;
+                  } elseif(!empty($display_state)) {
+                      $location_text = $display_state;
+                  }
+                  
+                  if(!empty($location_text)) {
+                      echo '<span style="display: inline-block; background: #ff6b35; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);">';
+                      echo '<i class="fas fa-map-marker-alt" style="margin-right: 4px; font-size: 10px;"></i>';
+                      echo htmlspecialchars($location_text);
+                      echo '</span>';
+                  }
+              }
+              ?>
+         </div>
+         
          <ul class="contact-info" onclick="do_redirect('<?php echo base_url();?>classified/detail/<?php echo $row->slug;?>')">
             <?php if($json->address != "" && 2==3){ ?>
                 <li class="meta-address">

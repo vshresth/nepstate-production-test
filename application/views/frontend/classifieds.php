@@ -72,22 +72,95 @@ if(!isset($_SESSION['show_popup_login'])){
 
 <?php 
 
-    $sort_qry = " ORDER BY id DESC";
+        // Use location priority sorting from controller
+        $location_priority = isset($this->data['location_priority_sort']) ? $this->data['location_priority_sort'] : " ORDER BY ";
+        
+        /**
+         * Sort products by metro area priority in PHP
+         */
+        function sortProductsByMetroArea($products, $metroAreaInfo) {
+            $searchCity = $metroAreaInfo['search_city'];
+            $allCities = $metroAreaInfo['all_cities'];
+            
+            // Create priority mapping
+            $cityPriorities = array();
+            $priority = 1;
+            
+            // Searched city gets highest priority
+            $cityPriorities[strtolower($searchCity)] = $priority++;
+            
+            // Other metro cities get lower priority
+            foreach ($allCities as $city) {
+                if (strtolower($city) !== strtolower($searchCity)) {
+                    $cityPriorities[strtolower($city)] = $priority++;
+                }
+            }
+            
+            // Sort products
+            usort($products, function($a, $b) use ($cityPriorities) {
+                $cityA = extractCityFromProduct($a);
+                $cityB = extractCityFromProduct($b);
+                
+                $priorityA = $cityPriorities[$cityA] ?? 999;
+                $priorityB = $cityPriorities[$cityB] ?? 999;
+                
+                if ($priorityA == $priorityB) {
+                    // Same priority - group by city name
+                    return strcmp($cityA, $cityB);
+                }
+                
+                return $priorityA - $priorityB;
+            });
+            
+            return $products;
+        }
+        
+        /**
+         * Extract city name from product data
+         */
+        function extractCityFromProduct($product) {
+            // Try city field first
+            if (!empty($product->city)) {
+                return strtolower(trim($product->city));
+            }
+            
+            // Try json_content city field
+            if (!empty($product->json_content)) {
+                $jsonData = json_decode($product->json_content, true);
+                if (isset($jsonData['city']) && !empty($jsonData['city'])) {
+                    return strtolower(trim($jsonData['city']));
+                }
+                
+                // Try extracting from address field
+                if (isset($jsonData['address']) && !empty($jsonData['address'])) {
+                    $address = $jsonData['address'];
+                    // Extract city from "Suite 105 Euless, TX 76040" format
+                    if (preg_match('/([^,]+),\s*[A-Z]{2}/', $address, $matches)) {
+                        return strtolower(trim($matches[1]));
+                    }
+                }
+            }
+            
+            return 'unknown';
+        }
+        
+    
+    $sort_qry = $location_priority . "id DESC";
     if(isset($_GET['sort'])){
         $sort = $_GET['sort'];
         if($sort == "title-asc"){
-            $sort_qry = " ORDER BY title ASC";
+            $sort_qry = $location_priority . "title ASC";
         } else if($sort == "title-desc"){
-            $sort_qry = " ORDER BY title DESC";
+            $sort_qry = $location_priority . "title DESC";
         } else if($sort == "date-asc"){
-            $sort_qry = " ORDER BY created_at ASC";
+            $sort_qry = $location_priority . "created_at ASC";
         } else if($sort == "views-desc"){
-            $sort_qry = " ORDER BY views DESC";
+            $sort_qry = $location_priority . "views DESC";
         } else if($sort == "views-asc"){
-            $sort_qry = " ORDER BY views ASC";
+            $sort_qry = $location_priority . "views ASC";
         } 
         else {
-            $sort_qry = " ORDER BY id DESC";
+            $sort_qry = $location_priority . "id DESC";
         }
     }
     $qry_sub = "";
@@ -179,10 +252,15 @@ if(!isset($_SESSION['show_popup_login'])){
                             ".$qr_text." ".$qry_sub."
                         HAVING (distance <= 50 OR (latitude = '' ) ) ".$sort_qry;
         } else {
-            $query_show = "SELECT * FROM products WHERE  category = '".$slug."' ".$qr_text." ".$qry_sub." ".$country_city_ConditionQuery_classified." AND status = 1"  .$sort_qry;
+            // SIMPLIFIED APPROACH: Get all listings first, then sort in PHP
+            $query_show = "SELECT * FROM products WHERE  category = '".$slug."' ".$qr_text." ".$qry_sub." ".$country_city_ConditionQuery_classified." AND status = 1 ORDER BY id DESC";
+            $all_products = $this->db->query($query_show)->result_object();
+            
+            // Apply metro area sorting in PHP for better performance
+            if (isset($this->data['metro_area_info']) && !empty($all_products)) {
+                $all_products = sortProductsByMetroArea($all_products, $this->data['metro_area_info']);
+            }
         }
-
-        $all_products = $this->db->query($query_show)->result_object();
     }
 
 
@@ -239,6 +317,186 @@ if(!isset($_SESSION['show_popup_login'])){
 <div class="rtcl-listings-actions">
     <div class="rtcl-result-count">
         Showing <?php echo count($all_products);?> result(s)
+        <?php 
+        // Metro area indicator
+        if(isset($_COOKIE['user_city_id']) && !empty($_COOKIE['user_city_id'])) {
+            $user_selected_city = $_COOKIE['user_city_id'];
+            
+            // Check if we have a "City, State" format and should show metro area info
+            if(strpos($user_selected_city, ',') !== false) {
+                $parts = explode(',', $user_selected_city);
+                $searchCity = trim($parts[0]);
+                $searchState = trim($parts[1]);
+                
+                // Check if user is viewing exact location only
+                $exactLocationOnly = isset($_GET['exact_location']) && $_GET['exact_location'] == '1';
+                
+                if ($exactLocationOnly) {
+                    // Show "exact location only" indicator
+                    echo '<span class="exact-location-indicator" style="color: #666; font-size: 14px; margin-left: 10px;">';
+                    echo '<i class="fas fa-crosshairs" style="color: #ff6b35;"></i>';
+                    echo ' Showing only ' . htmlspecialchars($searchCity) . ' listings';
+                    echo ' <a href="?" style="color: #ff6b35; text-decoration: underline; margin-left: 5px;">Show metro area</a>';
+                    echo '</span>';
+                } elseif(isset($this->data['metro_area_info'])) {
+                    // Show metro area indicator with comprehensive metro data
+                    $metroInfo = $this->data['metro_area_info'];
+                    $totalProducts = is_array($all_products) ? count($all_products) : 0;
+                    
+                    // Count exact matches for the searched city specifically
+                    $exact_matches = 0;
+                    if (is_array($all_products)) {
+                        foreach($all_products as $product) {
+                            $json = json_decode($product->json_content);
+                            $city_matches = false;
+                            $state_matches = false;
+                            
+                            // Check city match - check multiple sources
+                            if(isset($json->city) && strtolower(trim($json->city)) === strtolower($searchCity)) {
+                                $city_matches = true;
+                            } elseif(isset($json->location) && strtolower(trim($json->location)) === strtolower($searchCity)) {
+                                $city_matches = true;
+                            } elseif(isset($product->city) && strtolower(trim($product->city)) === strtolower($searchCity)) {
+                                $city_matches = true;
+                            }
+                            
+                            // Check state match - check multiple sources
+                            if(isset($product->state) && strtolower(trim($product->state)) === strtolower($searchState)) {
+                                $state_matches = true;
+                            } elseif(isset($json->state) && strtolower(trim($json->state)) === strtolower($searchState)) {
+                                $state_matches = true;
+                            } elseif(isset($json->province) && strtolower(trim($json->province)) === strtolower($searchState)) {
+                                $state_matches = true;
+                            }
+                            
+                            // Check for state abbreviations
+                            $stateMapping = array(
+                                'alabama' => 'al', 'alaska' => 'ak', 'arizona' => 'az', 'arkansas' => 'ar', 'california' => 'ca',
+                                'colorado' => 'co', 'connecticut' => 'ct', 'delaware' => 'de', 'florida' => 'fl', 'georgia' => 'ga',
+                                'hawaii' => 'hi', 'idaho' => 'id', 'illinois' => 'il', 'indiana' => 'in', 'iowa' => 'ia',
+                                'kansas' => 'ks', 'kentucky' => 'ky', 'louisiana' => 'la', 'maine' => 'me', 'maryland' => 'md',
+                                'massachusetts' => 'ma', 'michigan' => 'mi', 'minnesota' => 'mn', 'mississippi' => 'ms', 'missouri' => 'mo',
+                                'montana' => 'mt', 'nebraska' => 'ne', 'nevada' => 'nv', 'new hampshire' => 'nh', 'new jersey' => 'nj',
+                                'new mexico' => 'nm', 'new york' => 'ny', 'north carolina' => 'nc', 'north dakota' => 'nd', 'ohio' => 'oh',
+                                'oklahoma' => 'ok', 'oregon' => 'or', 'pennsylvania' => 'pa', 'rhode island' => 'ri', 'south carolina' => 'sc',
+                                'south dakota' => 'sd', 'tennessee' => 'tn', 'texas' => 'tx', 'utah' => 'ut', 'vermont' => 'vt',
+                                'virginia' => 'va', 'washington' => 'wa', 'west virginia' => 'wv', 'wisconsin' => 'wi', 'wyoming' => 'wy'
+                            );
+                            $stateAbbrev = isset($stateMapping[strtolower($searchState)]) ? $stateMapping[strtolower($searchState)] : '';
+                            
+                            if (!empty($stateAbbrev)) {
+                                if((isset($product->state) && strtolower(trim($product->state)) === $stateAbbrev) ||
+                                   (isset($json->state) && strtolower(trim($json->state)) === $stateAbbrev)) {
+                                    $state_matches = true;
+                                }
+                            }
+                            
+                            // Check if the full location is in the address field
+                            if(isset($json->address)) {
+                                $addressLower = strtolower($json->address);
+                                if(strpos($addressLower, strtolower($searchCity)) !== false && 
+                                   (strpos($addressLower, strtolower($searchState)) !== false || 
+                                    (!empty($stateAbbrev) && strpos($addressLower, $stateAbbrev) !== false))) {
+                                    $city_matches = true;
+                                    $state_matches = true;
+                                }
+                            }
+                            
+                            // Only count as exact match if BOTH city AND state match
+                            if($city_matches && $state_matches) {
+                                $exact_matches++;
+                            }
+                        }
+                    }
+                    
+                    if ($exact_matches === 0 && $totalProducts > 0) {
+                        // No exact matches but nearby listings exist
+                        echo '<span class="no-exact-match-indicator" style="color: #666; font-size: 16px; margin-left: 10px;">';
+                        echo '<i class="fas fa-map-marker-alt" style="color: #ff6b35;"></i>';
+                        echo ' <span style="color: #ff0000;">No listings found</span> for ' . htmlspecialchars($searchCity) . ', ' . htmlspecialchars($searchState) . ', showing nearby listings';
+                        echo '</span>';
+                    } elseif ($exact_matches > 0 && $totalProducts > $exact_matches) {
+                        // Some exact matches and some nearby
+                        $nearby_count = $totalProducts - $exact_matches;
+                        echo '<span class="metro-area-indicator" style="color: #666; font-size: 14px; margin-left: 10px;">';
+                        echo '<i class="fas fa-map-marker-alt" style="color: #ff6b35;"></i>';
+                        echo ' for ' . htmlspecialchars($metroInfo['main_city']) . ' metro area (including ' . $nearby_count . ' nearby listings)';
+                        echo ' <a href="?exact_location=1" style="color: #ff6b35; text-decoration: underline; margin-left: 5px;">Show only ' . htmlspecialchars($searchCity) . '</a>';
+                        echo '</span>';
+                    } elseif ($exact_matches > 0 && $totalProducts === $exact_matches) {
+                        // All matches are exact matches
+                        echo '<span class="metro-area-indicator" style="color: #666; font-size: 14px; margin-left: 10px;">';
+                        echo '<i class="fas fa-map-marker-alt" style="color: #ff6b35;"></i>';
+                        echo ' for ' . htmlspecialchars($searchCity) . ' (' . $totalProducts . ' listings)';
+                        echo '</span>';
+                    } elseif ($totalProducts === 0) {
+                        // No results at all
+                        echo '<span class="no-results-indicator" style="color: #666; font-size: 16px; margin-left: 10px;">';
+                        echo '<i class="fas fa-map-marker-alt" style="color: #ff6b35;"></i>';
+                        echo ' <span style="color: #ff0000;">No listings found</span> in ' . htmlspecialchars($metroInfo['main_city']) . ' metro area';
+                        echo '</span>';
+                    }
+                } elseif($exact_matches === 0 && is_array($all_products) && count($all_products) > 0) {
+                    // Show "no listings found, nearby listings" message when no exact matches
+                    echo '<span class="no-exact-match-indicator" style="color: #666; font-size: 16px; margin-left: 10px;">';
+                    echo '<i class="fas fa-map-marker-alt" style="color: #ff6b35;"></i>';
+                    echo ' <span style="color: #ff0000;">No listings found</span> for ' . htmlspecialchars($searchCity) . ', ' . htmlspecialchars($searchState) . ', nearby listings';
+                    echo '</span>';
+                } elseif(count($all_products) === 0) {
+                    // Show "no listings found" message when no results at all
+                    echo '<span class="no-results-indicator" style="color: #666; font-size: 16px; margin-left: 10px;">';
+                    echo '<i class="fas fa-map-marker-alt" style="color: #ff6b35;"></i>';
+                    echo ' <span style="color: #ff0000;">No listings found</span> for ' . htmlspecialchars($searchCity) . ', ' . htmlspecialchars($searchState);
+                    echo '</span>';
+                }
+                
+            } else {
+                // State-only search (no comma) - show state-wide message
+                $stateMapping = array(
+                    'alabama' => 'al', 'alaska' => 'ak', 'arizona' => 'az', 'arkansas' => 'ar', 'california' => 'ca',
+                    'colorado' => 'co', 'connecticut' => 'ct', 'delaware' => 'de', 'florida' => 'fl', 'georgia' => 'ga',
+                    'hawaii' => 'hi', 'idaho' => 'id', 'illinois' => 'il', 'indiana' => 'in', 'iowa' => 'ia',
+                    'kansas' => 'ks', 'kentucky' => 'ky', 'louisiana' => 'la', 'maine' => 'me', 'maryland' => 'md',
+                    'massachusetts' => 'ma', 'michigan' => 'mi', 'minnesota' => 'mn', 'mississippi' => 'ms', 'missouri' => 'mo',
+                    'montana' => 'mt', 'nebraska' => 'ne', 'nevada' => 'nv', 'new hampshire' => 'nh', 'new jersey' => 'nj',
+                    'new mexico' => 'nm', 'new york' => 'ny', 'north carolina' => 'nc', 'north dakota' => 'nd', 'ohio' => 'oh',
+                    'oklahoma' => 'ok', 'oregon' => 'or', 'pennsylvania' => 'pa', 'rhode island' => 'ri', 'south carolina' => 'sc',
+                    'south dakota' => 'sd', 'tennessee' => 'tn', 'texas' => 'tx', 'utah' => 'ut', 'vermont' => 'vt',
+                    'virginia' => 'va', 'washington' => 'wa', 'west virginia' => 'wv', 'wisconsin' => 'wi', 'wyoming' => 'wy'
+                );
+                
+                $isStateSearch = isset($stateMapping[strtolower($user_selected_city)]);
+                
+                if ($isStateSearch && !empty($all_products)) {
+                    echo '<span class="state-search-indicator" style="color: #666; font-size: 14px; margin-left: 10px;">';
+                    echo '<i class="fas fa-map-marker-alt" style="color: #ff6b35;"></i>';
+                    echo ' Showing ' . count($all_products) . ' listings from ' . htmlspecialchars(ucwords($user_selected_city));
+                    echo '</span>';
+                } elseif ($isStateSearch && empty($all_products)) {
+                    echo '<span class="no-results-indicator" style="color: #666; font-size: 16px; margin-left: 10px;">';
+                    echo '<i class="fas fa-map-marker-alt" style="color: #ff6b35;"></i>';
+                    echo ' <span style="color: #ff0000;">No listings found</span> for ' . htmlspecialchars(ucwords($user_selected_city));
+                    echo '</span>';
+                }
+            }
+            
+            // Show "all listings" message when no location filter is selected
+            if (empty($user_selected_city) && !empty($all_products)) {
+                echo '<span class="all-listings-indicator" style="color: #666; font-size: 14px; margin-left: 10px;">';
+                echo '<i class="fas fa-globe" style="color: #ff6b35;"></i>';
+                echo ' Showing all listings';
+                echo '</span>';
+            }
+        } else {
+            // No location filter selected - show all listings message
+            if(!empty($all_products)) {
+                echo '<span class="all-listings-indicator" style="color: #666; font-size: 14px; margin-left: 10px;">';
+                echo '<i class="fas fa-globe" style="color: #ff6b35;"></i>';
+                echo ' Showing all listings';
+                echo '</span>';
+            }
+        }
+        ?>
 </div>
     <select name="orderby" class="orderby" aria-label="Listing order" onchange="do_show_order_by_sort(this.value)" style="width:25%">
             <option value="" <?php if(!isset($_GET['sort'])){echo "SELECTED";}?>>Newest</option>
@@ -260,10 +518,124 @@ if(!isset($_SESSION['show_popup_login'])){
     </div>
 </div>
 <?php if(empty($all_products)){?>
-    <div class="rtcl-listings-actions wd100 text-center" style="justify-content: center;
-    color: #f00;">
-        No Classifieds found!
+    <?php 
+    // Always show the enhanced empty state for better user experience
+    ?>
+    <div class="empty-state-container" style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        text-align: center;
+        background: #fafafa;
+        border-radius: 12px;
+        margin: 30px 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    ">
+        <div class="empty-state-icon" style="
+            font-size: 80px;
+            color: #ddd;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        ">
+            🐕
+        </div>
+        
+        <h3 style="
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-family: 'Arial', sans-serif;
+        ">
+            No listings found yet
+        </h3>
+        
+        <p style="
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 25px;
+            max-width: 400px;
+            line-height: 1.5;
+        ">
+            There are no listings in this category at the moment. Be the first to post something or check back later for new listings.
+        </p>
+        
+        <div class="empty-state-actions" style="
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        ">
+            <a href="<?php echo base_url(); ?>?clear_location=1" style="
+                background: #ff6b35;
+                color: white;
+                padding: 15px 30px;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 16px;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#e55a2b'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(255, 107, 53, 0.4)'" onmouseout="this.style.background='#ff6b35'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(255, 107, 53, 0.3)'">
+                <i class="fas fa-list"></i>
+                Browse All Listings
+            </a>
+        </div>
+        
+        <div class="empty-state-tips" style="
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            max-width: 500px;
+        ">
+            <h4 style="
+                color: #333;
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 15px;
+                text-align: left;
+            ">
+                Try these suggestions:
+            </h4>
+            <ul style="
+                color: #666;
+                font-size: 14px;
+                text-align: left;
+                padding-left: 20px;
+                margin: 0;
+                line-height: 1.6;
+            ">
+                <li>Check your spelling</li>
+                <li>Try broader search terms</li>
+                <li>Search in nearby areas</li>
+                <li>Browse all categories</li>
+            </ul>
+        </div>
     </div>
+    
+    <style>
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .empty-state-container:hover .empty-state-icon {
+            animation-duration: 1s;
+        }
+    </style>
 <?php } ?>
 <div class="rtcl-listings custom_listing_view_ab rtcl-grid-view columns-3">
 

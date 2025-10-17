@@ -65,6 +65,41 @@
     
     // Open Graph setup complete for classified listings
     
+    // Generate structured data for business listing
+    $business_data = [
+        'name' => $row->title,
+        'description' => isset($json->description) ? $json->description : '',
+        'url' => base_url() . "classified/detail/" . $row->slug,
+        'address' => isset($json->address) ? $json->address : '',
+        'city' => $row->city,
+        'state' => $row->state,
+        'zipcode' => $row->zip_code,
+        'country' => $row->country,
+        'phone' => isset($json->phone) ? $json->phone : '',
+        'email' => isset($json->email) ? $json->email : '',
+        'image' => $og_image
+    ];
+    
+    $structured_data = generate_structured_data('localbusiness', $business_data);
+    
+    // Generate breadcrumb structured data
+    $breadcrumb_items = [
+        ['name' => 'Home', 'url' => base_url()],
+        ['name' => $category->title, 'url' => base_url() . 'classifieds/' . $category->slug],
+        ['name' => $row->title, 'url' => base_url() . "classified/detail/" . $row->slug]
+    ];
+    
+    $breadcrumb_data = generate_structured_data('breadcrumb', ['items' => $breadcrumb_items]);
+    
+    // Combine structured data
+    if ($structured_data && $breadcrumb_data) {
+        $structured_data = [$structured_data, $breadcrumb_data];
+    } elseif ($structured_data) {
+        $structured_data = [$structured_data];
+    } elseif ($breadcrumb_data) {
+        $structured_data = [$breadcrumb_data];
+    }
+    
     // Load remaining data
     $images = $this->db->query("SELECT * FROM product_images WHERE gallery = 0 AND product_id = ".$row->id)->result_object();
     $user = $this->db->query("SELECT * FROM users WHERE id = ".$row->uID)->result_object()[0];
@@ -316,7 +351,7 @@
                       <div class="directory-block__poster__thumb">
           <a class="directory-block__poster__link--image" href="./../../author/martin/index.html"> -->
 
-     <!-- <img src="<?php echo $user->profile_pic == 'dummy_image.png' ? base_url()."resources/uploads/profiles/".$user- loading="lazy">profile_pic : $user->profile_pic ;?>" class="attachment-80x80 size-80x80" alt="" decoding="async" title="" style="height: 70px; width: 80px;">        </a> -->
+     <!-- <img src="<?php echo $user->profile_pic == 'dummy_image.png' ? base_url().'resources/uploads/profiles/'.$user->profile_pic : $user->profile_pic ;?>" class="attachment-80x80 size-80x80" alt="" decoding="async" title="" style="height: 70px; width: 80px;" loading="lazy">        </a> -->
           <!-- </div>
                 </div> -->
             <!-- <h4 class="author-name">
@@ -863,7 +898,7 @@ function addAnchorTags($text) {
                 <!-- <div class="author-logo-wrapper">
                           <div class="directory-block__poster__thumb">
               <a class="directory-block__poster__link--image">
-           <img src="<?php echo $user->profile_pic == 'dummy_image.png' ? base_url()."resources/uploads/profiles/".$user- loading="lazy">profile_pic : $user->profile_pic;?>" class="attachment-80x80 size-80x80" alt="" decoding="async" title="" style="height: 70px; width: 80px;">        </a> -->
+           <img src="<?php echo $user->profile_pic == 'dummy_image.png' ? base_url().'resources/uploads/profiles/'.$user->profile_pic : $user->profile_pic;?>" class="attachment-80x80 size-80x80" alt="" decoding="async" title="" style="height: 70px; width: 80px;" loading="lazy">        </a> -->
               <!-- </div> -->
                     <!-- </div> -->
                 <!-- <h4 class="author-name">

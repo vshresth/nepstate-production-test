@@ -13,26 +13,68 @@ include("common/header.php");
    .advetise_button {
    }
    
-   /* Keep only essential fixes: uniform box size and full titles */
+   /* Make blog boxes bigger and ensure uniform heights */
+   .listing-slider-shortcode .swiper-slide {
+      height: 450px !important; /* Increased height for bigger boxes */
+   }
+   
    .listing-slider-shortcode .swiper-slide .blog-box-layout1 {
+      height: 100% !important;
       display: flex !important;
       flex-direction: column !important;
-      height: 100% !important;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
    }
    
    .listing-slider-shortcode .swiper-slide .blog-box-layout1 .post-thumb {
-      flex-shrink: 0;
+      flex-shrink: 0 !important;
+      height: 220px !important; /* Bigger image area */
+      overflow: hidden;
+   }
+   
+   .listing-slider-shortcode .swiper-slide .blog-box-layout1 .post-thumb img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
    }
    
    .listing-slider-shortcode .swiper-slide .blog-box-layout1 .post-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      padding: 20px !important; /* Increased padding */
+   }
+   
+   .listing-slider-shortcode .swiper-slide .blog-box-layout1 .post-title {
+      height: auto !important;
+      min-height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      margin-bottom: 15px !important;
+   }
+   
+   .listing-slider-shortcode .swiper-slide .blog-box-layout1 .post-title a {
+      font-size: 18px !important; /* Bigger font */
+      line-height: 1.4 !important;
+      display: block !important;
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: initial !important;
+      -webkit-line-clamp: none !important;
+      -webkit-box-orient: initial !important;
+      font-weight: 600 !important;
+      color: #333 !important;
    }
    
    .listing-slider-shortcode .swiper-slide .blog-box-layout1 .entry-meta {
-      margin-top: auto;
+      margin-top: auto !important;
+      margin-bottom: 0 !important;
+      font-size: 14px !important;
+      color: #666 !important;
    }
 </style>
 <div data-elementor-type="wp-page" data-elementor-id="10" class="elementor elementor-10">

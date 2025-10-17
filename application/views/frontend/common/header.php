@@ -19,7 +19,7 @@
    <meta property="og:title" content="<?php echo isset($page_title) ? $page_title : 'NepState - Connecting Nepalese Globally'; ?>" />
    <meta property="og:description" content="<?php echo isset($meta_description) ? $meta_description : 'Discover Nepalese businesses, jobs, events, and community connections worldwide.'; ?>" />
    <meta property="og:url" content="<?php echo isset($canonical_url) ? $canonical_url : base_url(); ?>" />
-   <meta property="og:type" content="<?php echo isset($og_type) ? $og_type : 'website'; ?>" />
+   <meta property="og:type" content="website" />
    <meta property="og:site_name" content="NepState" />
    
    <!-- Twitter Card Tags -->
@@ -75,9 +75,8 @@ dataLayer.push({
 		<link rel="stylesheet"  href="<?php echo $assets;?>plugins/elementor/assets/css/frontend.min.css?ver=3.13.4" media="all">
 	<?php } */ ?>
 	<link rel="stylesheet" href="<?php echo $assets;?>plugins/elementor/assets/lib/swiper/css/swiper.min.css?ver=5.3.6" media="all">
-	<!-- Missing CSS files - commented out to prevent 404 errors -->
-	<!-- <link rel="stylesheet" href="<?php echo $uploads;?>elementor/css/post-1731.css?ver=1686043492" media="all"> -->
-	<!-- <link rel="stylesheet"  href="<?php echo $uploads;?>elementor/css/post-10.css?ver=1686043493" media="all"> -->
+	<link rel="stylesheet" href="<?php echo $uploads;?>elementor/css/post-1731.css?ver=1686043492" media="all">
+	<link rel="stylesheet"  href="<?php echo $uploads;?>elementor/css/post-10.css?ver=1686043493" media="all">
 	<!-- <link rel="stylesheet"  href="<?php echo $assets;?>plugins/fluentform/public/css/fluent-forms-elementor-widget.css?ver=4.3.25" media="all"> -->
 	<!-- <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Outfit%3A300%2C400%2C500%2C600%2C700&#038;display=fallback&#038;ver=1.2.4" media="all"> -->
 	<!-- <link rel="stylesheet" href="<?php echo $assets;?>assets/vendor/bootstrap/bootstrap.min.css"> -->
@@ -106,10 +105,8 @@ dataLayer.push({
 	
 	<link rel="canonical" href="<?php echo base_url();?>">
 	<link rel="shortlink" href="<?php echo base_url();?>">
-	<!-- Invalid preload href - commented out to prevent warnings -->
-	<!-- <link rel="preload" as="font" type="font/woff2" crossorigin> -->
-	<!-- Invalid preconnect href - commented out to prevent warnings -->
-	<!-- <link rel="preconnect"> -->
+	<link rel="preload" as="font" type="font/woff2" crossorigin>
+	<link rel="preconnect">
 	
 	<link rel="icon" href="<?php echo settings()->site_logo;?>" sizes="32x32">
 	<link rel="icon" href="<?php echo settings()->site_logo;?>" sizes="192x192">
