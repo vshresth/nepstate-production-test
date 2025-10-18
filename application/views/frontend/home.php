@@ -218,7 +218,12 @@ include("common/header.php");
    <!-- CATEGORIES SLIDER -->
    <!-- CATEGORIES SLIDER ENDS -->
    <?php 
-      $cat_array = $this->db->query("SELECT * FROM categories WHERE parent_id = 0 ORDER BY id ASC")->result_object();
+      try {
+         $cat_array = $this->db->query("SELECT * FROM categories WHERE parent_id = 0 ORDER BY id ASC LIMIT 20")->result_object();
+      } catch (Exception $e) {
+         error_log("Categories query error: " . $e->getMessage());
+         $cat_array = []; // Fallback to empty array
+      }
       // $ii = 3;
       foreach($cat_array as $key=>$row){
       	$cat_data = $row;
@@ -250,7 +255,30 @@ include("common/header.php");
                         <div class="swiper-custom swiper">
                            <div class="swiper-wrapper" data-carousel-options="{&quot;col_xl&quot;:&quot;3&quot;,&quot;autoplay&quot;:false,&quot;speed&quot;:&quot;2000&quot;,&quot;col_lg&quot;:&quot;3&quot;,&quot;col_md&quot;:&quot;2&quot;,&quot;col_sm&quot;:&quot;2&quot;,&quot;col_xs&quot;:&quot;1&quot;}">
                               <?php 
-                                 $listOfBlogs = $this->db->query("SELECT * FROM blogs WHERE status = 1 AND is_approved = 1 ".$blog_forum_confession_condition_query. " ORDER BY id DESC limit 9")->result_object();
+                                 try {
+                                    $listOfBlogs = $this->db->query("SELECT * FROM blogs WHERE status = 1 AND is_approved = 1 ".$blog_forum_confession_condition_query. " ORDER BY id DESC limit 9")->result_object();
+                                 } catch (Exception $e) {
+                                    error_log("Blogs query error: " . $e->getMessage());
+                                    $listOfBlogs = []; // Fallback to empty array
+                                 }
+                                 
+                                 // Get all blog IDs for efficient comment counting
+                                 $blogIds = array_column($listOfBlogs, 'id');
+                                 $commentCounts = [];
+                                 if (!empty($blogIds)) {
+                                    try {
+                                       $commentResults = $this->db->select('bID, COUNT(*) as comment_count')
+                                                                  ->where_in('bID', $blogIds)
+                                                                  ->group_by('bID')
+                                                                  ->get('blog_comment')
+                                                                  ->result();
+                                       foreach ($commentResults as $result) {
+                                          $commentCounts[$result->bID] = $result->comment_count;
+                                       }
+                                    } catch (Exception $e) {
+                                       error_log("Blog comments query error: " . $e->getMessage());
+                                    }
+                                 }
                                  
                                  foreach($listOfBlogs as $blog) {
                                     $datetime = new DateTime($blog->created_at);
@@ -260,7 +288,7 @@ include("common/header.php");
                                     $image = $blog->image;
                                     $author = $blog->author;
                                     
-                                    $blogCommentCount = $this->db->where('bID', $blog->id)->get('blog_comment')->num_rows();
+                                    $blogCommentCount = isset($commentCounts[$blog->id]) ? $commentCounts[$blog->id] : 0;
                                     
                                     ?>
                               <div class="swiper-slide">
@@ -386,7 +414,12 @@ include("common/header.php");
                         <div class="swiper-container slider-content testimonial-content-wrap">
                            <div class="swiper-wrapper">
                            <?php
-							 	$listOfTestimonials = $this->db->order_by('id', 'DESC')->get('testimonials')->result_object();
+							 	try {
+									$listOfTestimonials = $this->db->order_by('id', 'DESC')->limit(10)->get('testimonials')->result_object();
+								} catch (Exception $e) {
+									error_log("Testimonials query error: " . $e->getMessage());
+									$listOfTestimonials = [];
+								}
 							  ?>
 							  <?php foreach($listOfTestimonials as $testimonial){?>
                               <div class="swiper-slide">
@@ -411,7 +444,12 @@ include("common/header.php");
                               </svg>
                            </span>
                            <?php
-                              $testimonialsCount = $this->db->count_all('testimonials');
+                              try {
+                                 $testimonialsCount = $this->db->count_all('testimonials');
+                              } catch (Exception $e) {
+                                 error_log("Testimonials count error: " . $e->getMessage());
+                                 $testimonialsCount = 0;
+                              }
                               ?>
                            <span class="listing-count-content__number number"><?php echo $testimonialsCount; ?></span>
                            <span class="listing-count-content__title title">Top Reviews    </span>
@@ -441,7 +479,12 @@ include("common/header.php");
                         <div class="swiper-container slider-content testimonial-content-wrap">
                            <div class="swiper-wrapper">
 							  <?php
-							 	$listOfTestimonials = $this->db->order_by('id', 'DESC')->get('testimonials')->result_object();
+							 	try {
+									$listOfTestimonials = $this->db->order_by('id', 'DESC')->limit(10)->get('testimonials')->result_object();
+								} catch (Exception $e) {
+									error_log("Testimonials query error: " . $e->getMessage());
+									$listOfTestimonials = [];
+								}
                          ?>
 							  <?php foreach($listOfTestimonials as $testimonial){?>
                               <div class="swiper-slide">
