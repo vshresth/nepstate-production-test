@@ -11,11 +11,16 @@
                
                $image_append = base_url()."resources/uploads/profiles/";
             
-               if($userInfo->profile_pic == "dummy_image.png"){
-                  $image_user = $image_append."dummy_image.png";
-               }else{
-                  $image_user = $userInfo->profile_pic;
-               }
+               if($userInfo->profile_pic == "dummy_image.png" || empty($userInfo->profile_pic)){
+                    $image_user = $image_append."dummy_image.png";
+                }else{
+                    // Check if it's already a full URL or relative path
+                    if(strpos($userInfo->profile_pic, 'http') === 0){
+                        $image_user = $userInfo->profile_pic;
+                    }else{
+                        $image_user = $image_append.$userInfo->profile_pic;
+                    }
+                }
             ?>
 
             <a href="<?php echo base_url().'my-chats?conversation_id='.$conversation->id.'&&name='.$userInfo->name.'&&redirect-by='.$_GET['slug'].'&&product-id='.$productId ?>" style="text-decoration:none; display:block;">

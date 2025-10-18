@@ -909,7 +909,7 @@ document.getElementById('couponCancelBtn').addEventListener('click', (event) =>{
 </script>
 
 
-<script src="https://maps.google.com/maps/api/js?key=AIzaSyDXLSGnMNN051ESCBh-mKv__W_m-tbkFlg&libraries=places&callback=initAutocomplete"></script>
+<!-- Google Maps API loaded in footer -->
 <script type="text/javascript">
     google.maps.event.addDomListener(window, 'load', initialize);
     function initialize() {
@@ -919,6 +919,7 @@ document.getElementById('couponCancelBtn').addEventListener('click', (event) =>{
            componentRestrictions: { country: countryCode } 
     };
 
+        if (typeof google !== 'undefined' && google.maps && google.maps.places) {
         var autocomplete = new google.maps.places.Autocomplete(input, options_);
         
         autocomplete.addListener('place_changed', function() {
@@ -954,6 +955,9 @@ document.getElementById('couponCancelBtn').addEventListener('click', (event) =>{
             $('#state').val(state);
             $("#country").val(country);
         });
+        } else {
+            console.warn('Google Maps API not loaded or not available');
+        }
     } 
 </script>
 

@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
+	<?php
+	// Include canonical helper for automatic SEO fixes
+	if (file_exists('canonical_helper.php')) {
+		require_once('canonical_helper.php');
+	}
+	?>
 	<style>
         /* Override Bootstrap's tooltip styles for form validation */
         .form-control:valid ~ .valid-tooltip {
@@ -105,8 +111,6 @@ dataLayer.push({
 	
 	<link rel="canonical" href="<?php echo isset($canonical_url) ? $canonical_url : current_url(); ?>">
 	<link rel="shortlink" href="<?php echo isset($canonical_url) ? $canonical_url : current_url(); ?>">
-	<link rel="preload" as="font" type="font/woff2" crossorigin>
-	<link rel="preconnect">
 	
 	<link rel="icon" href="<?php echo settings()->site_logo;?>" sizes="32x32">
 	<link rel="icon" href="<?php echo settings()->site_logo;?>" sizes="192x192">

@@ -211,6 +211,7 @@ function initAutocomplete() {
     };
 
     // Initialize Autocomplete for city name or ZIP code input
+    if (typeof google !== 'undefined' && google.maps && google.maps.places) {
     const autocomplete = new google.maps.places.Autocomplete(cityZipInput, autocompleteOptions);
     autocomplete.setFields(['address_components', 'geometry']);
 
@@ -250,6 +251,9 @@ function initAutocomplete() {
                 console.log('Selected City (Short Name):', cityName);
             });
 }
+    } else {
+        console.warn('Google Maps API not loaded or not available');
+    }
 
         // Initialize the autocomplete feature when the page loads
         google.maps.event.addDomListener(window, 'load', initAutocomplete);

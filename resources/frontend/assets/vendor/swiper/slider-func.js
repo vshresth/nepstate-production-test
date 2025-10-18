@@ -47,7 +47,7 @@
                 swiper.params.autoplay.delay = options['speed'];
             }
 
-            swiper.init();
+            // swiper.init(); // Removed - Swiper auto-initializes when created
         });
 
 
@@ -66,7 +66,7 @@
                     prevEl: '.swiper-button-prev',
                 },
             });
-            swiper.init();
+            // swiper.init(); // Removed - Swiper auto-initializes when created
         });
 
         $(".swiper-container3").each(function () {
@@ -108,7 +108,7 @@
                 });
                 swiper.params.autoplay.delay = options['speed'];
             }
-            swiper.init();
+            // swiper.init(); // Removed - Swiper auto-initializes when created
         });
 
         $(".swiper-container4").each(function () {
@@ -150,7 +150,7 @@
                 });
                 swiper.params.autoplay.delay = options['speed'];
             }
-            swiper.init();
+            // swiper.init(); // Removed - Swiper auto-initializes when created
         });
 
     }

@@ -691,10 +691,15 @@ function addAnchorTags($text) {
                             $ureview = $this->db->query("SELECT * FROM users WHERE id = ".$rev->user_id)->result_object()[0];
                             $image_append = base_url()."resources/uploads/profiles/";
             
-                            if($ureview->profile_pic == "dummy_image.png"){
+                            if($ureview->profile_pic == "dummy_image.png" || empty($ureview->profile_pic)){
                                 $image_user = $image_append."dummy_image.png";
                             }else{
-                                $image_user = $ureview->profile_pic;
+                                // Check if it's already a full URL or relative path
+                                if(strpos($ureview->profile_pic, 'http') === 0){
+                                    $image_user = $ureview->profile_pic;
+                                }else{
+                                    $image_user = $image_append.$ureview->profile_pic;
+                                }
                             }
                     
                     ?>

@@ -23,11 +23,15 @@ if(!isset($_SESSION['LISTYLOGIN'])){
                 $image_user = $image_append."dummy_image.png";
             } else {
 
-                if(user_info()->profile_pic == "dummy_image.png"){
+                if(user_info()->profile_pic == "dummy_image.png" || empty(user_info()->profile_pic)){
                     $image_user = $image_append."dummy_image.png";
                 }else{
-
-                    $image_user = user_info()->profile_pic;
+                    // Check if it's already a full URL or relative path
+                    if(strpos(user_info()->profile_pic, 'http') === 0){
+                        $image_user = user_info()->profile_pic;
+                    }else{
+                        $image_user = $image_append.user_info()->profile_pic;
+                    }
                 }
                 // if(user_info()->g_id != ""){
                 // } else  {

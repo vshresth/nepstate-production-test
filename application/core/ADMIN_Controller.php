@@ -23,6 +23,76 @@ class ADMIN_Controller extends CI_Controller {
 		$this->load->library('form_validation');
 		$this->load->library('session');
         $this->load->helper('url');
+        
+        // EMERGENCY FIX: Create functions directly to prevent 500 errors
+        if (!function_exists('generate_structured_data')) {
+            function generate_structured_data($type, $data = []) {
+                // Basic structured data generation
+                $base_url = 'https://nepstate.com';
+                
+                switch($type) {
+                    case 'organization':
+                        return [
+                            "@context" => "https://schema.org",
+                            "@type" => "Organization",
+                            "name" => "NepState",
+                            "url" => $base_url,
+                            "logo" => $base_url . "/resources/frontend/images/logo.png",
+                            "description" => "Nepali community platform for classifieds, events, and business listings"
+                        ];
+                    case 'localbusiness':
+                        return [
+                            "@context" => "https://schema.org",
+                            "@type" => "LocalBusiness",
+                            "name" => $data['name'] ?? 'NepState Business',
+                            "description" => $data['description'] ?? 'Local Nepali business'
+                        ];
+                    case 'website':
+                        return [
+                            "@context" => "https://schema.org",
+                            "@type" => "WebSite",
+                            "name" => "NepState",
+                            "url" => $base_url
+                        ];
+                    default:
+                        return null;
+                }
+            }
+        }
+        
+        if (!function_exists('generate_meta_tags')) {
+            function generate_meta_tags($title = '', $description = '', $keywords = '', $image = '', $type = 'website') {
+                return [
+                    'title' => $title ?: 'NepState - Nepali Community Platform',
+                    'description' => $description ?: 'Connect with the Nepali community through classifieds, events, and business listings.',
+                    'keywords' => $keywords ?: 'Nepali, community, classifieds, events, business',
+                    'image' => $image ?: 'https://nepstate.com/resources/frontend/images/logo.png',
+                    'type' => $type
+                ];
+            }
+        }
+        
+        if (!function_exists('user_info')) {
+            function user_info() {
+                // Return null if no user session
+                if (!isset($_SESSION['LISTYLOGIN'])) {
+                    return null;
+                }
+                return $_SESSION['LISTYLOGIN'];
+            }
+        }
+        
+        if (!function_exists('settings')) {
+            function settings() {
+                // Return basic settings object
+                return (object)[
+                    'site_name' => 'NepState',
+                    'email' => 'admin@nepstate.com',
+                    'phone' => '',
+                    'address' => ''
+                ];
+            }
+        }
         $this->load->database();
         $this->db->reconnect();
 

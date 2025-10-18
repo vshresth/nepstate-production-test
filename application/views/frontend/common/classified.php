@@ -8,7 +8,17 @@
             $ex = explode("=", $url_image);
             $url_image = $ex[0];
         } else {
-            $url_image = $user_details->profile_pic;
+            // Check if profile_pic is dummy_image.png or empty, use proper path
+            if($user_details->profile_pic == "dummy_image.png" || empty($user_details->profile_pic)){
+                $url_image = base_url()."resources/uploads/profiles/dummy_image.png";
+            } else {
+                // Check if it's already a full URL or relative path
+                if(strpos($user_details->profile_pic, 'http') === 0){
+                    $url_image = $user_details->profile_pic;
+                } else {
+                    $url_image = base_url()."resources/uploads/profiles/".$user_details->profile_pic;
+                }
+            }
         }
         $json = json_decode($row->json_content, false);
 

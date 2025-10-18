@@ -24,12 +24,14 @@ Disallow: /my-payments/
 Disallow: /profile/
 Disallow: /change_password/
 Disallow: /delete_account/
-Disallow: /promote_website/
 Disallow: /pricing/
 Disallow: /post_classifieds/
 Disallow: /post_blog/
 Disallow: /post_confession/
 Disallow: /post-forum/
+Disallow: /update-user-country/
+Disallow: /country-selection/
+Disallow: /switch-country/
 
 # Allow important directories
 Allow: /resources/
@@ -37,6 +39,5 @@ Allow: /uploads/classified-listing/
 Allow: /uploads/blogs/
 Allow: /uploads/forums/
 
-# Sitemaps
+# Sitemap
 Sitemap: https://nepstate.com/sitemap.xml
-Sitemap: https://nepstate.com/sitemap_generator.php
