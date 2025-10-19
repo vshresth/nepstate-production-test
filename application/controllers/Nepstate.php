@@ -466,22 +466,164 @@ class Nepstate extends ADMIN_Controller {
 	public function contactUs()
 	{
 		try{
-			$name = $this->input->post('name');
-			$email = $this->input->post('email');
-			$subject = $this->input->post('subject');
-			$userMessage = $this->input->post('message');
-			$message = '<p> Name: ' . $name . '</p><p> Email: ' . $email . '</p><p> Subject: ' . $subject . '</p><p> Message: ' . $userMessage . ' </p>';
-// 			$this->do_send_email(settings()->email, settings()->email, 'Contact Email', $message, 0, 0);
+			// SPAM PROTECTION CHECKS
+			
+			// Debug: Log the form submission
+			error_log("Contact form submission - Name: " . $this->input->post('name') . ", Email: " . $this->input->post('email'));
+			
+			// 1. Verify reCAPTCHA
+			$recaptcha_response = $this->input->post('g-recaptcha-response');
+			if (empty($recaptcha_response)) {
+				$_SESSION['invalid'] = "Please complete the reCAPTCHA verification.";
+				redirect($_SERVER['HTTP_REFERER']);
+				return;
+			}
+			
+			// Verify reCAPTCHA with Google
+			$secret_key = '6LdUOe8rAAAAADqZ7ZoWsSOKLD8KE1s8y_0s6hDd'; // Your reCAPTCHA secret key
+			$verify_url = 'https://www.google.com/recaptcha/api/siteverify';
+			$verify_data = [
+				'secret' => $secret_key,
+				'response' => $recaptcha_response,
+				'remoteip' => $_SERVER['REMOTE_ADDR']
+			];
+			
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $verify_url);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($verify_data));
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+			$response = curl_exec($ch);
+			$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			curl_close($ch);
+			
+			$result = json_decode($response, true);
+			
+			// Debug logging (remove in production)
+			error_log("reCAPTCHA Response: " . $response);
+			error_log("reCAPTCHA HTTP Code: " . $http_code);
+			
+			if (!$result || !isset($result['success'])) {
+				$_SESSION['invalid'] = "reCAPTCHA verification failed. Please refresh and try again.";
+				redirect($_SERVER['HTTP_REFERER']);
+				return;
+			}
+			
+			if (!$result['success']) {
+				$error_codes = isset($result['error-codes']) ? implode(', ', $result['error-codes']) : 'Unknown error';
+				error_log("reCAPTCHA Errors: " . $error_codes);
+				$_SESSION['invalid'] = "reCAPTCHA verification failed. Please try again.";
+				redirect($_SERVER['HTTP_REFERER']);
+				return;
+			}
+			
+			// 2. Check honeypot field (should be empty for real users)
+			$honeypot = $this->input->post('website');
+			if (!empty($honeypot)) {
+				$_SESSION['invalid'] = "Spam detected. Please try again.";
+				redirect($_SERVER['HTTP_REFERER']);
+				return;
+			}
+			
+			// 2. Rate limiting - check if too many submissions from same IP
+			$ip = $_SERVER['REMOTE_ADDR'];
+			$session_key = 'contact_form_' . $ip;
+			
+			if (!isset($_SESSION[$session_key])) {
+				$_SESSION[$session_key] = 0;
+			}
+			
+			// Allow maximum 3 submissions per hour per IP
+			if ($_SESSION[$session_key] >= 3) {
+				$_SESSION['invalid'] = "Too many submissions. Please wait before trying again.";
+				redirect($_SERVER['HTTP_REFERER']);
+				return;
+			}
+			
+			// 3. Validate input data
+			$name = trim($this->input->post('name'));
+			$email = trim($this->input->post('email'));
+			$subject = trim($this->input->post('subject'));
+			$userMessage = trim($this->input->post('message'));
+			
+			// Check for empty fields
+			if (empty($name) || empty($email) || empty($subject) || empty($userMessage)) {
+				$_SESSION['invalid'] = "All fields are required.";
+				redirect($_SERVER['HTTP_REFERER']);
+				return;
+			}
+			
+			// Check for suspicious patterns (common spam indicators) - Made less strict
+			$spam_patterns = [
+				'/[a-zA-Z]{30,}/', // Very long words (30+ chars, likely random)
+				'/^[a-zA-Z]{15,}$/', // Single word with 15+ random characters
+				'/^[0-9]{10,}$/', // Only numbers (10+ digits)
+				'/[A-Z]{8,}/', // Too many consecutive capitals (8+)
+			];
+			
+			$all_text = $name . ' ' . $subject . ' ' . $userMessage;
+			$pattern_matches = 0;
+			
+			foreach ($spam_patterns as $pattern) {
+				if (preg_match($pattern, $all_text)) {
+					$pattern_matches++;
+				}
+			}
+			
+			// Only block if multiple patterns match (less aggressive)
+			if ($pattern_matches >= 2) {
+				$_SESSION['invalid'] = "Invalid submission detected.";
+				redirect($_SERVER['HTTP_REFERER']);
+				return;
+			}
+			
+			// Check email format
+			if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+				$_SESSION['invalid'] = "Please enter a valid email address.";
+				redirect($_SERVER['HTTP_REFERER']);
+				return;
+			}
+			
+			// 4. Check for common spam keywords (made less aggressive)
+			$spam_keywords = ['viagra', 'casino', 'loan shark', 'credit card debt', 'bitcoin investment', 'crypto trading'];
+			$text_lower = strtolower($all_text);
+			$spam_keyword_count = 0;
+			
+			foreach ($spam_keywords as $keyword) {
+				if (strpos($text_lower, $keyword) !== false) {
+					$spam_keyword_count++;
+				}
+			}
+			
+			// Only block if multiple spam keywords found
+			if ($spam_keyword_count >= 2) {
+				$_SESSION['invalid'] = "Spam content detected.";
+				redirect($_SERVER['HTTP_REFERER']);
+				return;
+			}
+			
+			// 5. All checks passed - increment counter and send email
+			$_SESSION[$session_key] = ($_SESSION[$session_key] ?? 0) + 1;
+			
+			$message = '<p><strong>Name:</strong> ' . htmlspecialchars($name) . '</p>';
+			$message .= '<p><strong>Email:</strong> ' . htmlspecialchars($email) . '</p>';
+			$message .= '<p><strong>Subject:</strong> ' . htmlspecialchars($subject) . '</p>';
+			$message .= '<p><strong>Message:</strong><br>' . nl2br(htmlspecialchars($userMessage)) . '</p>';
+			$message .= '<p><strong>IP Address:</strong> ' . $ip . '</p>';
+			$message .= '<p><strong>Time:</strong> ' . date('Y-m-d H:i:s') . '</p>';
+			
+			// Send email to your actual email instead of noreply
 			$this->do_send_email('noreply@nepstate.com', 'noreply@nepstate.com', 'Contact Email', $message, 0, 0);
-// 			$this->do_send_email(settings()->email, 'bilal@code-xperts.com', 'Contact Email', $message, 0, 0);
 
-			$_SESSION['valid'] = "Message sent successfully.";
+			$_SESSION['valid'] = "Message sent successfully. We'll get back to you soon!";
 			redirect($_SERVER['HTTP_REFERER']);
+			
 		}catch(Exception $e){
 			$_SESSION['invalid'] = "Some Error Occurred!";
 			redirect($_SERVER['HTTP_REFERER']);
 		}
-
 	}
 	
 	public function updateUserCountry($countryId)

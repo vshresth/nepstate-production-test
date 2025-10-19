@@ -1,0 +1,175 @@
+RewriteEngine on
+
+
+# Force HTTPS redirect
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Remove www (redirect www to non-www)
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+#RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/$1 [L]
+
+
+## OPTIMIZED EXPIRES CACHING ##
+<IfModule mod_expires.c>
+ExpiresActive On
+# Images - Cache for 1 year
+ExpiresByType image/jpg "access plus 1 year"
+ExpiresByType image/jpeg "access plus 1 year"
+ExpiresByType image/gif "access plus 1 year"
+ExpiresByType image/png "access plus 1 year"
+ExpiresByType image/svg+xml "access plus 1 year"
+ExpiresByType image/webp "access plus 1 year"
+ExpiresByType image/x-icon "access plus 1 year"
+# CSS and JavaScript - Cache for 1 year
+ExpiresByType text/css "access plus 1 year"
+ExpiresByType text/javascript "access plus 1 year"
+ExpiresByType application/javascript "access plus 1 year"
+ExpiresByType application/x-javascript "access plus 1 year"
+# HTML - Cache for 1 hour (dynamic content)
+ExpiresByType text/html "access plus 1 hour"
+# Fonts - Cache for 1 year
+ExpiresByType font/ttf "access plus 1 year"
+ExpiresByType font/otf "access plus 1 year"
+ExpiresByType font/woff "access plus 1 year"
+ExpiresByType font/woff2 "access plus 1 year"
+ExpiresByType application/font-woff "access plus 1 year"
+# Other files
+ExpiresByType application/pdf "access plus 1 month"
+ExpiresByType application/x-shockwave-flash "access plus 1 month"
+ExpiresDefault "access plus 1 week"
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Vary header for proper caching
+  <FilesMatch "\.(js|css|xml|gz|html)$">
+    Header append Vary: Accept-Encoding
+  </FilesMatch>
+  
+  # Cache-Control headers for better performance
+  <FilesMatch "\.(jpg|jpeg|png|gif|svg|webp|ico)$">
+    Header set Cache-Control "max-age=31536000, public"
+  </FilesMatch>
+  
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "max-age=31536000, public"
+  </FilesMatch>
+  
+  <FilesMatch "\.(html|htm|php)$">
+    Header set Cache-Control "max-age=3600, public, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+## OPTIMIZED GZIP COMPRESSION ##
+<ifModule mod_gzip.c>
+mod_gzip_on Yes
+mod_gzip_dechunk Yes
+mod_gzip_item_include file .(html?|txt|css|js|php|pl)$
+mod_gzip_item_include handler ^cgi-script$
+mod_gzip_item_include mime ^text/.*
+mod_gzip_item_include mime ^application/x-javascript.*
+mod_gzip_item_exclude mime ^image/.*
+mod_gzip_item_exclude rspheader ^Content-Encoding:.*gzip.*
+</ifModule>
+
+<IfModule mod_deflate.c>
+  # Compress HTML, CSS, JavaScript, Text, XML and fonts
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/rss+xml
+  AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+  AddOutputFilterByType DEFLATE application/x-font
+  AddOutputFilterByType DEFLATE application/x-font-opentype
+  AddOutputFilterByType DEFLATE application/x-font-otf
+  AddOutputFilterByType DEFLATE application/x-font-truetype
+  AddOutputFilterByType DEFLATE application/x-font-ttf
+  AddOutputFilterByType DEFLATE application/x-javascript
+  AddOutputFilterByType DEFLATE application/xhtml+xml
+  AddOutputFilterByType DEFLATE application/xml
+  AddOutputFilterByType DEFLATE font/opentype
+  AddOutputFilterByType DEFLATE font/otf
+  AddOutputFilterByType DEFLATE font/ttf
+  AddOutputFilterByType DEFLATE image/svg+xml
+  AddOutputFilterByType DEFLATE image/x-icon
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/javascript
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/xml
+  
+  # Remove browser bugs (optional)
+  BrowserMatch ^Mozilla/4 gzip-only-text/html
+  BrowserMatch ^Mozilla/4\.0[678] no-gzip
+  BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+  Header append Vary User-Agent
+</IfModule>
+
+<FilesMatch "\.(mp4|avi|flv|mov)$">
+    #Order deny,allow
+    #Deny from all
+</FilesMatch>
+
+# Fix 404 URLs from Google Search Console
+# Added on 2025-10-17 20:35:02
+
+# Fix 1: Redirect old static files to homepage
+RewriteRule ^classified/detail/listing-map/index\.html$ / [R=301,L]
+RewriteRule ^tags/listing-map/index\.html$ / [R=301,L]
+RewriteRule ^classifieds/listing-map/index\.html$ / [R=301,L]
+
+# Fix 2: Fix double slashes
+RewriteRule ^classified/detail//$ /classifieds/ [R=301,L]
+RewriteRule ^tags//$ /tags [R=301,L]
+RewriteRule ^classifieds//$ /classifieds/ [R=301,L]
+
+# Fix 3: Fix empty tag URLs
+RewriteRule ^tags/$ /tags [R=301,L]
+RewriteRule ^forums/tags/$ /forums/ [R=301,L]
+
+# Fix 4: General double slash cleaner (catch any remaining)
+RewriteCond %{THE_REQUEST} \s[^?]*//
+RewriteRule ^(.*)$ /$1 [R=301,L]
+
+
+# Fix Tag URL Server Errors from Google Search Console
+# Added on 2025-10-17 21:09:53
+
+# Fix Forum Tag URLs - Redirect to forums page
+RewriteRule ^forums/tags/(.*)$ /forums/ [R=301,L]
+
+# Fix Blog Tag URLs - Redirect to blog page
+RewriteRule ^blog/tags/(.*)$ /blog/ [R=301,L]
+
+
+# Fix Specific Redirect URLs from Google Search Console
+# Added on 2025-10-17 21:18:54
+
+# Fix 1: www redirect (ensure it's working)
+RewriteCond %{HTTP_HOST} ^www\.nepstate\.com$ [NC]
+RewriteRule ^(.*)$ https://nepstate.com/$1 [R=301,L]
+
+# Fix 2: Remove empty sort parameters from classifieds URLs
+RewriteCond %{QUERY_STRING} ^sort=$ [NC]
+RewriteRule ^classifieds/(.*)$ /classifieds/$1? [R=301,L]
+
+# Fix 3: Remove empty sort parameters from other URLs
+RewriteCond %{QUERY_STRING} ^(.+&)?sort=$ [NC]
+RewriteRule ^(.*)$ /$1?%1 [R=301,L]
+
+# Fix 4: Tag URLs redirect to main tags page
+RewriteRule ^tags/(.*)$ /tags [R=301,L]
+
+# Fix 5: Chat URLs with parameters - redirect to forums
+RewriteRule ^chat/([0-9]+)\?slug=(.*)$ /forums/ [R=301,L]
+
+# Fix 6: Utility URL - redirect to homepage
+RewriteRule ^cancel-country-selection$ / [R=301,L]
+
+# Fix 7: Clean up any remaining query parameters with empty values
+RewriteCond %{QUERY_STRING} ^(.+)=&(.*)$ [NC]
+RewriteRule ^(.*)$ /$1?%2 [R=301,L]
+

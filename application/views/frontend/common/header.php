@@ -131,6 +131,9 @@ dataLayer.push({
 	</script>
 	<?php } ?>
 	
+	<!-- Google reCAPTCHA v2 Script -->
+	<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+	
 </head>
 
 <?php 

@@ -1,17 +1,17 @@
 <?php
 /**
- * Performance Optimization Script for NepState
+ * Performance Optimization Script for NepState LIVE Database
  * This script identifies and fixes critical performance bottlenecks
  */
 
-echo "<h1>🚀 NepState Performance Optimization</h1>";
+echo "<h1>🚀 NepState Performance Optimization (LIVE DATABASE)</h1>";
 echo "<h2>📊 Current Performance Issues Identified:</h2>";
 
-// Database connection
+// Database connection for LIVE
 try {
     $pdo = new PDO(
-        "mysql:host=localhost;dbname=u415500770_nepstate_test",
-        "u415500770_nepstate_test",
+        "mysql:host=localhost;dbname=u415500770_nepstate",
+        "u415500770_nepstate",
         "P145DeDevelopers"
     );
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -99,7 +99,7 @@ echo "</ul>";
 
 echo "<h4>4. Server Optimization:</h4>";
 echo "<ul>";
-echo "<li>✅ Enable Gzip compression</li>";
+echo "<li>✅ Enable G Compr compression</li>";
 echo "<li>✅ Implement CDN for static assets</li>";
 echo "<li>✅ Optimize PHP configuration</li>";
 echo "<li>✅ Add database connection pooling</li>";
@@ -128,7 +128,7 @@ echo "<h3>💡 Next Steps:</h3>";
 echo "<p>Run the following scripts in order:</p>";
 echo "<ol>";
 echo "<li><code>fix_critical_queries.php</code> - Fix unlimited queries</li>";
-echo "<li><code>add_database_indexes.php</code> - Add performance indexes</li>";
+echo "<li><code>add_database_indexes_live.php</code> - Add performance indexes to LIVE database</li>";
 echo "<li><code>implement_pagination.php</code> - Add pagination to listings</li>";
 echo "<li><code>add_caching.php</code> - Implement query caching</li>";
 echo "<li><code>optimize_images.php</code> - Add lazy loading and compression</li>";

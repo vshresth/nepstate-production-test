@@ -1,16 +1,16 @@
 <?php
 /**
- * Database Indexes for Performance Optimization
+ * Database Indexes for Performance Optimization - LIVE DATABASE
  * This script adds critical indexes to improve query performance
  */
 
-echo "<h1>🗄️ Adding Database Indexes for Performance</h1>";
+echo "<h1>🗄️ Adding Database Indexes for Performance (LIVE DATABASE)</h1>";
 
-// Database connection
+// Database connection for LIVE
 try {
     $pdo = new PDO(
-        "mysql:host=localhost;dbname=u415500770_nepstate_test",
-        "u415500770_nepstate_test",
+        "mysql:host=localhost;dbname=u415500770_nepstate",
+        "u415500770_nepstate",
         "P145DeDevelopers"
     );
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
