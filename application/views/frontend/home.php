@@ -161,7 +161,7 @@ include("common/header.php");
                   foreach($final_value->items as $key=>$gold){ 
                   ?>
                <div class="gold_box">
-                  <img src="<?php echo $assets;?><?php echo $gold->iconURL;?>">
+                  <img src="<?php echo $this->data['assets'];?><?php echo $gold->iconURL;?>">
                   <div class="gold_details">
                      <h4><?php echo $gold->name;?></h4>
                      <small><?php echo $gold->symbol=="HALMARK"?$gold->prices[1]->name:$gold->prices[0]->name;?></small>
@@ -256,7 +256,7 @@ include("common/header.php");
                            <div class="swiper-wrapper" data-carousel-options="{&quot;col_xl&quot;:&quot;3&quot;,&quot;autoplay&quot;:false,&quot;speed&quot;:&quot;2000&quot;,&quot;col_lg&quot;:&quot;3&quot;,&quot;col_md&quot;:&quot;2&quot;,&quot;col_sm&quot;:&quot;2&quot;,&quot;col_xs&quot;:&quot;1&quot;}">
                               <?php 
                                  try {
-                                    $listOfBlogs = $this->db->query("SELECT * FROM blogs WHERE status = 1 AND is_approved = 1 ".$blog_forum_confession_condition_query. " ORDER BY id DESC limit 9")->result_object();
+                                    $listOfBlogs = $this->db->query("SELECT * FROM blogs WHERE status = 1 AND is_approved = 1 ORDER BY id DESC limit 9")->result_object();
                                  } catch (Exception $e) {
                                     error_log("Blogs query error: " . $e->getMessage());
                                     $listOfBlogs = []; // Fallback to empty array
@@ -405,7 +405,7 @@ include("common/header.php");
             <div class="elementor-widget-wrap elementor-element-populated">
                <div class="elementor-element elementor-element-07fe8ac elementor-absolute elementor-invisible elementor-widget elementor-widget-image" data-id="07fe8ac" data-element_type="widget" data-settings="{&quot;_position&quot;:&quot;absolute&quot;,&quot;_animation&quot;:&quot;fadeInUp&quot;}" data-widget_type="image.default">
                   <div class="elementor-widget-container">
-                     <img decoding="async" width="45" height="56" src="<?php echo $uploads;?>2022/09/vector-6.svg" class="attachment-full size-full wp-image-4383" alt="" title="">															
+                     <img decoding="async" width="45" height="56" src="<?php echo $this->data['uploads'];?>2022/09/vector-6.svg" class="attachment-full size-full wp-image-4383" alt="" title="">															
                   </div>
                </div>
                <div class="elementor-element elementor-element-8ba1383 elementor-widget elementor-widget-image" data-id="8ba1383" data-element_type="widget" data-widget_type="image.default">
