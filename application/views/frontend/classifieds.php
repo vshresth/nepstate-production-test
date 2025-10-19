@@ -209,15 +209,20 @@ if(!isset($_SESSION['show_popup_login'])){
         //        OR JSON_EXTRACT(json_content, '$.title') LIKE '%".strtolower($slug)."%'
         //     ")->result_object();
 
-        $all_products = $this->db->query("SELECT *
-            FROM products
-            
-            WHERE JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.event_tags')) LIKE '%".strtolower($slug)."%'
-               OR JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.service_tags')) LIKE '%".strtolower($slug)."%'
-               OR JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.training_courses')) LIKE '%".strtolower($slug)."%'
-               OR JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.title')) LIKE '%".strtolower($slug)."%'
-               ".$country_city_ConditionQuery_classified."
-            ")->result_object();
+        try {
+            $all_products = $this->db->query("SELECT *
+                FROM products
+                
+                WHERE JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.event_tags')) LIKE '%".strtolower($slug)."%'
+                   OR JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.service_tags')) LIKE '%".strtolower($slug)."%'
+                   OR JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.training_courses')) LIKE '%".strtolower($slug)."%'
+                   OR JSON_UNQUOTE(JSON_EXTRACT(json_content, '$.title')) LIKE '%".strtolower($slug)."%'
+                   ".$country_city_ConditionQuery_classified."
+                LIMIT 50")->result_object();
+        } catch (Exception $e) {
+            error_log("JSON search query error: " . $e->getMessage());
+            $all_products = []; // Fallback to empty array
+        }
 
 
     } else {
@@ -261,8 +266,13 @@ if(!isset($_SESSION['show_popup_login'])){
                         HAVING (distance <= 50 OR (latitude = '' ) ) ".$sort_qry;
         } else {
             // SIMPLIFIED APPROACH: Get all listings first, then sort in PHP
-            $query_show = "SELECT * FROM products WHERE  category = '".$slug."' ".$qr_text." ".$qry_sub." ".$country_city_ConditionQuery_classified." AND status = 1 ORDER BY id DESC";
-            $all_products = $this->db->query($query_show)->result_object();
+            $query_show = "SELECT * FROM products WHERE  category = '".$slug."' ".$qr_text." ".$qry_sub." ".$country_city_ConditionQuery_classified." AND status = 1 ORDER BY id DESC LIMIT 50";
+            try {
+                $all_products = $this->db->query($query_show)->result_object();
+            } catch (Exception $e) {
+                error_log("Products query error: " . $e->getMessage());
+                $all_products = []; // Fallback to empty array
+            }
             
             // Apply metro area sorting in PHP for better performance
             if (isset($this->data['metro_area_info']) && !empty($all_products)) {

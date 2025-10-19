@@ -479,12 +479,8 @@ include("common/header.php");
                         <div class="swiper-container slider-content testimonial-content-wrap">
                            <div class="swiper-wrapper">
 							  <?php
-							 	try {
-									$listOfTestimonials = $this->db->order_by('id', 'DESC')->limit(10)->get('testimonials')->result_object();
-								} catch (Exception $e) {
-									error_log("Testimonials query error: " . $e->getMessage());
-									$listOfTestimonials = [];
-								}
+							 	// Use the same testimonials data from the first query
+							 	// No need to query the database again
                          ?>
 							  <?php foreach($listOfTestimonials as $testimonial){?>
                               <div class="swiper-slide">

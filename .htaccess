@@ -58,3 +58,63 @@ AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml text/x-js t
     #Order deny,allow
     #Deny from all
 </FilesMatch>
+
+# Fix 404 URLs from Google Search Console
+# Added on 2025-10-17 20:35:02
+
+# Fix 1: Redirect old static files to homepage
+RewriteRule ^classified/detail/listing-map/index\.html$ / [R=301,L]
+RewriteRule ^tags/listing-map/index\.html$ / [R=301,L]
+RewriteRule ^classifieds/listing-map/index\.html$ / [R=301,L]
+
+# Fix 2: Fix double slashes
+RewriteRule ^classified/detail//$ /classifieds/ [R=301,L]
+RewriteRule ^tags//$ /tags [R=301,L]
+RewriteRule ^classifieds//$ /classifieds/ [R=301,L]
+
+# Fix 3: Fix empty tag URLs
+RewriteRule ^tags/$ /tags [R=301,L]
+RewriteRule ^forums/tags/$ /forums/ [R=301,L]
+
+# Fix 4: General double slash cleaner (catch any remaining)
+RewriteCond %{THE_REQUEST} \s[^?]*//
+RewriteRule ^(.*)$ /$1 [R=301,L]
+
+
+# Fix Tag URL Server Errors from Google Search Console
+# Added on 2025-10-17 21:09:53
+
+# Fix Forum Tag URLs - Redirect to forums page
+RewriteRule ^forums/tags/(.*)$ /forums/ [R=301,L]
+
+# Fix Blog Tag URLs - Redirect to blog page
+RewriteRule ^blog/tags/(.*)$ /blog/ [R=301,L]
+
+
+# Fix Specific Redirect URLs from Google Search Console
+# Added on 2025-10-17 21:18:54
+
+# Fix 1: www redirect (ensure it's working)
+RewriteCond %{HTTP_HOST} ^www\.nepstate\.com$ [NC]
+RewriteRule ^(.*)$ https://nepstate.com/$1 [R=301,L]
+
+# Fix 2: Remove empty sort parameters from classifieds URLs
+RewriteCond %{QUERY_STRING} ^sort=$ [NC]
+RewriteRule ^classifieds/(.*)$ /classifieds/$1? [R=301,L]
+
+# Fix 3: Remove empty sort parameters from other URLs
+RewriteCond %{QUERY_STRING} ^(.+&)?sort=$ [NC]
+RewriteRule ^(.*)$ /$1?%1 [R=301,L]
+
+# Fix 4: Tag URLs redirect to main tags page
+RewriteRule ^tags/(.*)$ /tags [R=301,L]
+
+# Fix 5: Chat URLs with parameters - redirect to forums
+RewriteRule ^chat/([0-9]+)\?slug=(.*)$ /forums/ [R=301,L]
+
+# Fix 6: Utility URL - redirect to homepage
+RewriteRule ^cancel-country-selection$ / [R=301,L]
+
+# Fix 7: Clean up any remaining query parameters with empty values
+RewriteCond %{QUERY_STRING} ^(.+)=&(.*)$ [NC]
+RewriteRule ^(.*)$ /$1?%2 [R=301,L]
